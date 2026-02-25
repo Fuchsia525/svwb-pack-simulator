@@ -1,16 +1,47 @@
-# React + Vite
+# SVWB Pack Opening Simulator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fan-made pack opening simulator for **Shadowverse: Worlds Beyond**
 
-Currently, two official plugins are available:
+🎴 **[Try it live here](https://svwb-pack-opening-simulator.netlify.app/)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## What is this?
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+A browser-based simulator that recreates the pack opening experience 
+from Shadowverse: Worlds Beyond, including accurate card rarities, 
+official draw rates, and the pity system.
 
-## Expanding the ESLint configuration
+## Why was this made?
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+I (Fuchsia the Biscuit), wanted to make a few YouTube/Twitch series, including opening
+SVWB packs to make some sealed series (credit to YGOTuber Dzeeff for the inspiration)
+but there wasn't a tool to simulate pulling for cards, so I made this.
+
+## How was this made?
+
+Honestly? Vibe coding via Claude. This project was built using AI-assisted 
+development (though I tried my best to make sure it works and is clean).
+This is because I am not a programmer (though I want to learn) and I made this
+just because there wasn't an existing program that does its thing. 
+If you're a developer and something makes you wince, you're probably 
+right. Pull requests welcome. Also, if you want to make just a better app,
+that's welcome too. I'd love that. Please do that.
+
+## Known Issues
+
+- Pity counter has an edge case (being investigated)
+- Card images not yet implemented for all sets
+
+## About the Creator
+
+This simulator was originally made for various ideas of YouTube and 
+Twitch content series by Fuchsia the Biscuit. 
+If you'd like to know more or support me as a 
+creator, find me at [https://fuchsiathebiscuit.carrd.co/](https://fuchsiathebiscuit.carrd.co/).
+
+## Disclaimer
+
+Fan-made project. Not affiliated with, endorsed by, or connected to 
+Cygames, Inc. in any way.
+Shadowverse: Worlds Beyond™ © Cygames, Inc.
