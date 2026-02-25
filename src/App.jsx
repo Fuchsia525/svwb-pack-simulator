@@ -447,7 +447,13 @@ export default function PackSimulator() {
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
   const [allFlipped, setAllFlipped] = useState(false);
-  const [pityCounter, setPityCounter] = useState(0);
+  const [pityCounter, setPityCounter] = useState({
+  legends_rise: 0,
+  infinity_evolved: 0,
+  heirs_omen: 0,
+  skybound_dragons: 0,
+  blossoming_fate: 0,
+});
   const [stats, setStats] = useState({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
   const [multiCount, setMultiCount] = useState(10);
   const [multiResults, setMultiResults] = useState(null);
@@ -492,9 +498,9 @@ export default function PackSimulator() {
 
   const handleOpenPack = useCallback(() => {
     playPackSound();
-    const result = openPack(currentSet.cards, pityCounter, currentSet.ticketCards);
+    const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
     setPackCards(result.cards);
-    setPityCounter(result.pityCounter);
+    setPityCounter(prev => ({ ...prev, [selectedSet]: result.pityCounter }));
     setFlipped(new Array(8).fill(false));
     setAllFlipped(false);
     setView("pack");
@@ -537,7 +543,7 @@ export default function PackSimulator() {
 
   const handleMultiOpen = useCallback(() => {
     playPackSound();
-    let currentPity = pityCounter;
+    let currentPity = pityCounter[selectedSet];
     const allCards = [];
     const newStats = { ...stats };
     const newHist = [...history];
@@ -553,7 +559,7 @@ export default function PackSimulator() {
       });
       newHist.unshift({ set: currentSet.name, setCode: currentSet.code, cards: result.cards, packNum: newStats.total });
     }
-    setPityCounter(currentPity);
+    setPityCounter(prev => ({ ...prev, [selectedSet]: currentPity }));
     setStats(newStats);
     setHistory(newHist.slice(0, 100));
     setMultiResults(allCards);
@@ -562,7 +568,7 @@ export default function PackSimulator() {
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
 
   const resetAll = () => {
-    setPackCards(null); setMultiResults(null); setPityCounter(0);
+    setPackCards(null); setMultiResults(null); setPityCounter({ legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0 });
     setStats({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
   };
@@ -666,7 +672,7 @@ export default function PackSimulator() {
       }}>
         <span style={{ color: currentSet.color, fontWeight: 600 }}>{currentSet.code}</span>
         <span>{currentSet.cards.length} cards</span>
-        <span style={{ color: "#FFD700" }}>⏱ Pity: {pityCounter}/{RATES.pityInterval}</span>
+        <span style={{ color: "#FFD700" }}>⏱ Pity: {pityCounter[selectedSet]}/{RATES.pityInterval}</span>
         <span>Opened: {stats.total}</span>
         <span style={{ color: RARITY_COLORS[3] }}>★{stats.Legendary}</span>
         <span style={{ color: RARITY_COLORS[2] }}>◆{stats.Gold}</span>
