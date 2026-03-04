@@ -545,7 +545,11 @@ export default function PackSimulator() {
   }, [playSound]);
 
   const currentSet = SETS[selectedSet];
-
+const packHighlight = packCards ? (
+  packCards.some(c => c.isTicket) ? "ticket" :
+  packCards.some(c => c.rarityIdx === 3) ? "legendary" :
+  packCards.some(c => c.rarityIdx === 2) ? "gold" : null
+) : null;
   const handleOpenPack = useCallback(() => {
     playPackSound();
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
@@ -566,6 +570,13 @@ export default function PackSimulator() {
       set: currentSet.name, setCode: currentSet.code, cards: result.cards, packNum: stats.total + 1,
     }, ...prev].slice(0, 50));
   }, [currentSet, pityCounter, stats, playPackSound]);
+  const handleNextPack = useCallback(() => {
+  setFlipped(new Array(8).fill(false));
+  setAllFlipped(false);
+  setTimeout(() => {
+    handleOpenPack();
+  }, 550);
+}, [handleOpenPack]);
 
   const handleFlipCard = useCallback((idx) => {
     if (flipped[idx]) return;
@@ -835,8 +846,13 @@ export default function PackSimulator() {
             {packCards ? (
               <div>
                 <div style={{
-                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
-                  maxWidth: 600, margin: "0 auto 14px",
+                 display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
+maxWidth: 600, margin: "0 auto 14px",
+boxShadow: packHighlight === "ticket" ? "0 0 40px #FFD70099, 0 0 80px #FFD70044"
+         : packHighlight === "legendary" ? "0 0 40px #FF450066, 0 0 80px #9C27B044"
+         : packHighlight === "gold" ? "0 0 30px #FFD70044"
+         : "none",
+transition: "box-shadow 0.5s ease",
                 }}>
                   {packCards.map((card, i) => (
                     <PackCard key={i} card={card} flipped={flipped[i]} onClick={() => handleFlipCard(i)} setColor={currentSet.color} />
@@ -849,7 +865,7 @@ export default function PackSimulator() {
                       background: "#1a1a2e", color: "#ccc", fontSize: 13, cursor: "pointer",
                     }}>Flip All</button>
                   )}
-                  <button onClick={handleOpenPack} style={{
+                  <button onClick={handleNextPack} style={{
                     padding: "8px 28px", borderRadius: 8, border: "none",
                     background: allFlipped
                       ? `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`
