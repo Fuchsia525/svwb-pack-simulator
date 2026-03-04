@@ -577,7 +577,7 @@ const packHighlight = packCards ? (
   setTimeout(() => {
     handleOpenPack();
   }, 550);
-}, [handleOpenPack, playPackSound]);
+}, [handleOpenPack]);
 
   const handleFlipCard = useCallback((idx) => {
     if (flipped[idx]) return;
