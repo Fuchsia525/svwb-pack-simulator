@@ -545,7 +545,11 @@ export default function PackSimulator() {
   }, [playSound]);
 
   const currentSet = SETS[selectedSet];
-
+  const packHighlight = packCards ? (
+    packCards.some(c => c.isTicket) ? "ticket" :
+    packCards.some(c => c.rarityIdx === 3) ? "legendary" :
+    packCards.some(c => c.rarityIdx === 2) ? "gold" : null
+) : null;
   const handleOpenPack = useCallback(() => {
     playPackSound();
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
@@ -837,6 +841,11 @@ export default function PackSimulator() {
                 <div style={{
                   display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
                   maxWidth: 600, margin: "0 auto 14px",
+                  boxShadow: packHighlight === "ticket" ? "0 0 40px #FFD70099, 0 0 80px #FFD70044"
+                          : packHighlight === "legendary" ? "0 0 40px #FF450066, 0 0 80px #9C27B044"
+                          : packHighlight === "gold" ? "0 0 30px #FFD70044"
+                          : "none",
+                  transition: "box-shadow 0.5s ease",
                 }}>
                   {packCards.map((card, i) => (
                     <PackCard key={i} card={card} flipped={flipped[i]} onClick={() => handleFlipCard(i)} setColor={currentSet.color} />
