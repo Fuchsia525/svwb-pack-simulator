@@ -571,12 +571,13 @@ const packHighlight = packCards ? (
     }, ...prev].slice(0, 50));
   }, [currentSet, pityCounter, stats, playPackSound]);
   const handleNextPack = useCallback(() => {
+  playPackSound();
   setFlipped(new Array(8).fill(false));
   setAllFlipped(false);
   setTimeout(() => {
     handleOpenPack();
   }, 550);
-}, [handleOpenPack]);
+}, [handleOpenPack, playPackSound]);
 
   const handleFlipCard = useCallback((idx) => {
     if (flipped[idx]) return;
