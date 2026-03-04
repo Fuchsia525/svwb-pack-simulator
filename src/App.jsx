@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 // ══════════════════════════════════════════════════════════════
 // SHADOWVERSE: WORLDS BEYOND — PACK OPENING SIMULATOR
@@ -496,19 +496,21 @@ export default function PackSimulator() {
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
   const [allFlipped, setAllFlipped] = useState(false);
-  const [pityCounter, setPityCounter] = useState({
-  legends_rise: 0,
-  infinity_evolved: 0,
-  heirs_omen: 0,
-  skybound_dragons: 0,
-  blossoming_fate: 0,
-  apocalypse_pact: 0,
+  const [pityCounter, setPityCounter] = useState(() => {
+  const saved = localStorage.getItem("pityCounter");
+  return saved ? JSON.parse(saved) : { legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0, apocalypse_pact: 0 };
 });
-  const [stats, setStats] = useState({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
+  const [stats, setStats] = useState(() => {
+  const saved = localStorage.getItem("stats");
+  return saved ? JSON.parse(saved) : { total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 };
+});
   const [multiCount, setMultiCount] = useState(10);
   const [multiResults, setMultiResults] = useState(null);
   const [showStats, setShowStats] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => {
+  const saved = localStorage.getItem("history");
+  return saved ? JSON.parse(saved) : [];
+});
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
@@ -543,7 +545,19 @@ export default function PackSimulator() {
     setTimeout(() => playSound(659, 0.08), 60);
     setTimeout(() => playSound(784, 0.12), 120);
   }, [playSound]);
+  
+  useEffect(() => {
+    localStorage.setItem("pityCounter", JSON.stringify(pityCounter));
+  }, [pityCounter]);
 
+  useEffect(() => {
+    localStorage.setItem("stats", JSON.stringify(stats));
+  }, [stats]);
+
+  useEffect(() => {
+    localStorage.setItem("history", JSON.stringify(history));
+  }, [history]);
+  
   const currentSet = SETS[selectedSet];
   const packHighlight = packCards ? (
     packCards.some(c => c.isTicket) ? "ticket" :
