@@ -261,6 +261,55 @@ const SETS = {
       ["World of Games",7,2],["Fate of the World",7,2],
       ["Getenou, Eightfold Glory",7,3],
     ]
+  },
+  apocalypse_pact: {
+    name: "Apocalypse Pact",
+    code: "AP",
+    date: "February 26, 2026",
+    color: "#b5451b",
+    ticketCards: ["Shymm, Love Bewitched", "Kandima, Sublime Hatred"],
+    cards: [
+      // FORESTCRAFT
+      ["Motherly Forestdweller",0,0],["Monkey of Paradise",0,0],["Advent of the Eld Lance",0,0],
+      ["Kindly Executor",0,1],["Howling Wolfman",0,1],["Floral Offering",0,1],
+      ["Merciful Attendant",0,2],["Nurturing Eld Lance",0,2],
+      ["Althenia, Nurturing Bloom",0,3],["Sathanid, Eld Lance",0,3],
+      // SWORDCRAFT
+      ["Fearless Soldier",1,0],["Idle Maid",1,0],["Advent of the Eld Sword",1,0],
+      ["Loyal Guard",1,1],["Navy Cat",1,1],["Majestic Conquest",1,1],
+      ["Heartless Strategist",1,2],["Ruthless Eld Sword",1,2],
+      ["Noel IV, Ruthless Warlord",1,3],["Yidmetra, Eld Sword",1,3],
+      // RUNECRAFT
+      ["Crystalspawn",2,0],["Daydream Librarian",2,0],["Advent of the Eld Crystals",2,0],
+      ["Enraptured Student",2,1],["Adventurous Grimoire",2,1],["Reaved Order",2,1],
+      ["Spellbound Professor",2,2],["Bewitching Eld Crystals",2,2],
+      ["Shymm, Love Bewitched",2,3],["Calge-Danthia, Eld Crystals",2,3],
+      // DRAGONCRAFT
+      ["Resolute Dragonewt",3,0],["Fruitfish",3,0],["Advent of the Eld Blades",3,0],
+      ["Decisive Swordmaster",3,1],["Spiked Dragon",3,1],["Spilling Red",3,1],
+      ["Impeding Pugilist",3,2],["Beheading Eld Blades",3,2],
+      ["Sagatsumatsu, Fair Beheader",3,3],["Vorlalai, Eld Blades",3,3],
+      // ABYSSCRAFT
+      ["Reverent Demon",4,0],["Ghost Dodger",4,0],["Advent of the Eld Sight",4,0],
+      ["Yearnful Necromancer",4,1],["Devilish Heartbreaker",4,1],["Allure of the Mightiest",4,1],
+      ["Deprived Destroyer",4,2],["Depletive Eld Sight",4,2],
+      ["Armes, Depletive Demon",4,3],["Bibati, Eld Sight",4,3],
+      // HAVENCRAFT
+      ["Prostrating Coward",5,0],["Unholy Water",5,0],["Advent of the Eld Tome",5,0],
+      ["Venerating Dyer",5,1],["Pegasus Rider",5,1],["Scripture of Salvation",5,1],
+      ["Worshipful Crusader",5,2],["Sublime Eld Tome",5,2],
+      ["Kandima, Sublime Hatred",5,3],["Lyanthoth, Eld Tome",5,3],
+      // PORTALCRAFT
+      ["Shoddy Plaything",6,0],["Brilliant Inventor",6,0],["Advent of the Eld Axe",6,0],
+      ["Substandard Puppet",6,1],["Timid Pioneer",6,1],["Myriad Designs",6,1],
+      ["Ludicrous Ordnance",6,2],["Unfeeling Eld Axe",6,2],
+      ["Camiscilia, Unfeeling Heart",6,3],["Yog-Zentha, Eld Axe",6,3],
+      // NEUTRAL
+      ["Muddled Onlooker",7,0],["Disrupted Commoner",7,0],
+      ["Encroached World",7,1],
+      ["Beast Lost to the Dark",7,2],["Dark Dimensions",7,2],
+      ["Omegotep, the Dreaded One",7,3],
+    ]
   }
 };
 
@@ -453,6 +502,7 @@ export default function PackSimulator() {
   heirs_omen: 0,
   skybound_dragons: 0,
   blossoming_fate: 0,
+  apocalypse_pact: 0,
 });
   const [stats, setStats] = useState({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
   const [multiCount, setMultiCount] = useState(10);
@@ -568,7 +618,7 @@ export default function PackSimulator() {
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
 
   const resetAll = () => {
-    setPackCards(null); setMultiResults(null); setPityCounter({ legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0 });
+    setPackCards(null); setMultiResults(null); setPityCounter({ legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0, apocalypse_pact: 0 });
     setStats({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
   };
@@ -982,10 +1032,25 @@ export default function PackSimulator() {
         )}
       </div>
 
-      {/* ═══ FOOTER ═══ */}
-      <div style={{ textAlign: "center", padding: "8px 0 20px", fontSize: 9, opacity: 0.25 }}>
-        Fan simulator · Not affiliated with Cygames · Card data from Shadowverse Wiki & GameWith
-      </div>
+     {/* ═══ FOOTER ═══ */}
+<div style={{ textAlign: "center", padding: "8px 0 20px", fontSize: 9, opacity: 0.4, lineHeight: 2 }}>
+  Fan-made project · Made by{" "}
+  <a href="https://fuchsiathebiscuit.carrd.co/" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
+    Fuchsia the Biscuit
+  </a>
+  {" "}·{" "}
+  <a href="https://github.com/Fuchsia525/svwb-pack-simulator#readme" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
+    About
+  </a>
+  {" "}· Open source —{" "}
+  <a href="https://github.com/Fuchsia525/svwb-pack-simulator" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
+    GitHub
+  </a>
+  <br />
+  Not affiliated with, endorsed by, or connected to Cygames, Inc. in any way.
+  <br />
+  Shadowverse: Worlds Beyond™ © Cygames, Inc.
+</div>
       </div>
     </div>
   );
