@@ -892,7 +892,7 @@ transition: "box-shadow 0.5s ease",
                 <div style={{ fontSize: 11, opacity: 0.4, marginBottom: 24 }}>
                   {currentSet.cards.length} cards · {setCardCounts.Bronze}B / {setCardCounts.Silver}S / {setCardCounts.Gold}G / {setCardCounts.Legendary}L
                 </div>
-                <button onClick={handleOpenPack} style={{
+                <button onClick={() => { playPackSound(); handleOpenPack(); }} style={{
                   padding: "14px 52px", borderRadius: 12, border: "none",
                   background: `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}bb)`,
                   color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer",
