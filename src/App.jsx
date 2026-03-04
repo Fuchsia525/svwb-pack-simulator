@@ -512,7 +512,6 @@ export default function PackSimulator() {
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
-  const transitioningRef = useRef(false);
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -546,12 +545,9 @@ export default function PackSimulator() {
   }, [playSound]);
 
   const currentSet = SETS[selectedSet];
-  const packHighlight = packCards ? (
-    packCards.some(c => c.isTicket) ? "ticket" :
-    packCards.some(c => c.rarityIdx === 3) ? "legendary" :
-    packCards.some(c => c.rarityIdx === 2) ? "gold" : null
-  ) : null;
+
   const handleOpenPack = useCallback(() => {
+    playPackSound();
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
     setPackCards(result.cards);
     setPityCounter(prev => ({ ...prev, [selectedSet]: result.pityCounter }));
@@ -569,20 +565,9 @@ export default function PackSimulator() {
     setHistory(prev => [{
       set: currentSet.name, setCode: currentSet.code, cards: result.cards, packNum: stats.total + 1,
     }, ...prev].slice(0, 50));
-  }, [currentSet, pityCounter, stats]);
-  const handleNextPack = useCallback(() => {
-  playPackSound();
-  transitioningRef.current = true;
-  setFlipped(new Array(8).fill(false));
-  setAllFlipped(false);
-  setTimeout(() => {
-    handleOpenPack();
-    transitioningRef.current = false;
-  }, 550);
-}, [handleOpenPack, playPackSound]);
+  }, [currentSet, pityCounter, stats, playPackSound]);
 
   const handleFlipCard = useCallback((idx) => {
-    if (transitioningRef.current) return;
     if (flipped[idx]) return;
     if (packCards) playFlipSound(packCards[idx].rarityIdx);
     setFlipped(prev => {
@@ -850,13 +835,8 @@ export default function PackSimulator() {
             {packCards ? (
               <div>
                 <div style={{
-                 display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
-maxWidth: 600, margin: "0 auto 14px",
-boxShadow: packHighlight === "ticket" ? "0 0 40px #FFD70099, 0 0 80px #FFD70044"
-         : packHighlight === "legendary" ? "0 0 40px #FF450066, 0 0 80px #9C27B044"
-         : packHighlight === "gold" ? "0 0 30px #FFD70044"
-         : "none",
-transition: "box-shadow 0.5s ease",
+                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
+                  maxWidth: 600, margin: "0 auto 14px",
                 }}>
                   {packCards.map((card, i) => (
                     <PackCard key={i} card={card} flipped={flipped[i]} onClick={() => handleFlipCard(i)} setColor={currentSet.color} />
@@ -869,7 +849,7 @@ transition: "box-shadow 0.5s ease",
                       background: "#1a1a2e", color: "#ccc", fontSize: 13, cursor: "pointer",
                     }}>Flip All</button>
                   )}
-                  <button onClick={handleNextPack} style={{
+                  <button onClick={handleOpenPack} style={{
                     padding: "8px 28px", borderRadius: 8, border: "none",
                     background: allFlipped
                       ? `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`
@@ -877,8 +857,6 @@ transition: "box-shadow 0.5s ease",
                     color: allFlipped ? "#fff" : "#666", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     boxShadow: allFlipped ? `0 4px 20px ${currentSet.color}33` : "none",
                     transition: "all 0.3s",
-                    cursor: allFlipped ? "pointer" : "default",
-  pointerEvents: allFlipped ? "auto" : "none",
                   }}>Next Pack</button>
                 </div>
               </div>
@@ -898,7 +876,7 @@ transition: "box-shadow 0.5s ease",
                 <div style={{ fontSize: 11, opacity: 0.4, marginBottom: 24 }}>
                   {currentSet.cards.length} cards · {setCardCounts.Bronze}B / {setCardCounts.Silver}S / {setCardCounts.Gold}G / {setCardCounts.Legendary}L
                 </div>
-                <button onClick={() => { playPackSound(); handleOpenPack(); }} style={{
+                <button onClick={handleOpenPack} style={{
                   padding: "14px 52px", borderRadius: 12, border: "none",
                   background: `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}bb)`,
                   color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer",
