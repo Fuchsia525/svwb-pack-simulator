@@ -30,7 +30,6 @@ that's welcome too. I'd love that. Please do that.
 
 ## Known Issues
 
-- Pity counter has an edge case (being investigated)
 - Card images not yet implemented for all sets
 
 ## About the Creator
