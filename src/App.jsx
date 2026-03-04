@@ -492,7 +492,6 @@ function PackCard({ card, flipped, onClick, setColor }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 export default function PackSimulator() {
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedSet, setSelectedSet] = useState(Object.keys(SETS).at(-1));
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
@@ -513,6 +512,7 @@ export default function PackSimulator() {
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
+  const transitioningRef = useRef(false);
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -546,11 +546,11 @@ export default function PackSimulator() {
   }, [playSound]);
 
   const currentSet = SETS[selectedSet];
-const packHighlight = packCards ? (
-  packCards.some(c => c.isTicket) ? "ticket" :
-  packCards.some(c => c.rarityIdx === 3) ? "legendary" :
-  packCards.some(c => c.rarityIdx === 2) ? "gold" : null
-) : null;
+  const packHighlight = packCards ? (
+    packCards.some(c => c.isTicket) ? "ticket" :
+    packCards.some(c => c.rarityIdx === 3) ? "legendary" :
+    packCards.some(c => c.rarityIdx === 2) ? "gold" : null
+  ) : null;
   const handleOpenPack = useCallback(() => {
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
     setPackCards(result.cards);
@@ -572,17 +572,17 @@ const packHighlight = packCards ? (
   }, [currentSet, pityCounter, stats]);
   const handleNextPack = useCallback(() => {
   playPackSound();
-  setIsTransitioning(true);
+  transitioningRef.current = true;
   setFlipped(new Array(8).fill(false));
   setAllFlipped(false);
   setTimeout(() => {
     handleOpenPack();
-    setIsTransitioning(false);
+    transitioningRef.current = false;
   }, 550);
 }, [handleOpenPack, playPackSound]);
 
   const handleFlipCard = useCallback((idx) => {
-    if (isTransitioning) return;
+    if (transitioningRef.current) return;
     if (flipped[idx]) return;
     if (packCards) playFlipSound(packCards[idx].rarityIdx);
     setFlipped(prev => {
@@ -877,6 +877,8 @@ transition: "box-shadow 0.5s ease",
                     color: allFlipped ? "#fff" : "#666", fontSize: 13, fontWeight: 700, cursor: "pointer",
                     boxShadow: allFlipped ? `0 4px 20px ${currentSet.color}33` : "none",
                     transition: "all 0.3s",
+                    cursor: allFlipped ? "pointer" : "default",
+  pointerEvents: allFlipped ? "auto" : "none",
                   }}>Next Pack</button>
                 </div>
               </div>
