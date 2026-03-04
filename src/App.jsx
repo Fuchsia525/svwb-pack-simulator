@@ -492,7 +492,7 @@ function PackCard({ card, flipped, onClick, setColor }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 export default function PackSimulator() {
-  const [selectedSet, setSelectedSet] = useState("legends_rise");
+  const [selectedSet, setSelectedSet] = useState(Object.keys(SETS).at(-1));
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
   const [allFlipped, setAllFlipped] = useState(false);
@@ -702,7 +702,7 @@ export default function PackSimulator() {
 
       {/* ═══ SET SELECTOR ═══ */}
       <div style={{ display: "flex", gap: 5, padding: "8px 0 10px", overflowX: "auto", justifyContent: "center", flexWrap: "wrap" }}>
-        {Object.entries(SETS).map(([key, set]) => (
+        {Object.entries(SETS).reverse().map(([key, set]) => (
           <button key={key} onClick={() => { setSelectedSet(key); setPackCards(null); setMultiResults(null); setView("pack"); }}
             style={{
               padding: "5px 12px", borderRadius: 20, border: selectedSet === key ? `2px solid ${set.color}` : "1px solid #333",
