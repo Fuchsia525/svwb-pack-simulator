@@ -866,7 +866,7 @@ export default function PackSimulator() {
                       background: "#1a1a2e", color: "#ccc", fontSize: 13, cursor: "pointer",
                     }}>Flip All</button>
                   )}
-                  <button onClick={handleNextPack} style={{
+                  <button onClick={handleNextPack} disabled={!allFlipped} style={{
                     padding: "8px 28px", borderRadius: 8, border: "none",
                     background: allFlipped
                       ? `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`
