@@ -569,7 +569,7 @@ const packHighlight = packCards ? (
     setHistory(prev => [{
       set: currentSet.name, setCode: currentSet.code, cards: result.cards, packNum: stats.total + 1,
     }, ...prev].slice(0, 50));
-  }, [currentSet, pityCounter, stats, playPackSound]);
+  }, [currentSet, pityCounter, stats]);
   const handleNextPack = useCallback(() => {
   playPackSound();
   setFlipped(new Array(8).fill(false));
