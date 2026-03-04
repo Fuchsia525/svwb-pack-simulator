@@ -492,6 +492,7 @@ function PackCard({ card, flipped, onClick, setColor }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 export default function PackSimulator() {
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedSet, setSelectedSet] = useState(Object.keys(SETS).at(-1));
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
@@ -571,14 +572,17 @@ const packHighlight = packCards ? (
   }, [currentSet, pityCounter, stats]);
   const handleNextPack = useCallback(() => {
   playPackSound();
+  setIsTransitioning(true);
   setFlipped(new Array(8).fill(false));
   setAllFlipped(false);
   setTimeout(() => {
     handleOpenPack();
+    setIsTransitioning(false);
   }, 550);
-}, [handleOpenPack]);
+}, [handleOpenPack, playPackSound]);
 
   const handleFlipCard = useCallback((idx) => {
+    if (isTransitioning) return;
     if (flipped[idx]) return;
     if (packCards) playFlipSound(packCards[idx].rarityIdx);
     setFlipped(prev => {
