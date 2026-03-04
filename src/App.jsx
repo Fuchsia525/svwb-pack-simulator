@@ -551,7 +551,6 @@ const packHighlight = packCards ? (
   packCards.some(c => c.rarityIdx === 2) ? "gold" : null
 ) : null;
   const handleOpenPack = useCallback(() => {
-    playPackSound();
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
     setPackCards(result.cards);
     setPityCounter(prev => ({ ...prev, [selectedSet]: result.pityCounter }));
