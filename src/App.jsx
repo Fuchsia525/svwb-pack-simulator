@@ -514,6 +514,9 @@ export default function PackSimulator() {
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
+  const [collectionSetFilter, setCollectionSetFilter] = useState("all");
+  const [collectionRarityFilter, setCollectionRarityFilter] = useState("all");
+  const [collectionClassFilter, setCollectionClassFilter] = useState("all");
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -557,7 +560,7 @@ export default function PackSimulator() {
   useEffect(() => {
     localStorage.setItem("history", JSON.stringify(history));
   }, [history]);
-  
+
   const currentSet = SETS[selectedSet];
   const packHighlight = packCards ? (
     packCards.some(c => c.isTicket) ? "ticket" :
@@ -787,7 +790,7 @@ export default function PackSimulator() {
 
       {/* ═══ NAV TABS ═══ */}
       <div style={{ display: "flex", justifyContent: "center", gap: 4, padding: "0 0 10px" }}>
-        {[["pack", "🃏 Open"], ["multi", "📦 Multi"], ["history", "📋 History"]].map(([v, label]) => (
+        {[["pack", "🃏 Open"], ["multi", "📦 Multi"], ["history", "📋 History"], ["collection", "📚 Collection"]].map(([v, label]) => (
           <button key={v} onClick={() => { setView(v); setShowStats(false); }}
             style={{
               padding: "5px 16px", borderRadius: 6,
@@ -919,6 +922,88 @@ export default function PackSimulator() {
               </div>
             )}
           </>
+        )}
+
+        {/* ── COLLECTION VIEW ── */}
+        {view === "collection" && (
+          <div>
+            {history.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "50px 0", opacity: 0.4 }}>
+                No cards yet — open some packs!
+              </div>
+            ) : (() => {
+              const collection = {};
+              history.forEach(pack => {
+                pack.cards.forEach(c => {
+                  const key = `${c.name}|${c.classIdx}|${c.rarityIdx}`;
+                  if (!collection[key]) collection[key] = { ...c, count: 0, animCount: 0 };
+                  collection[key].count++;
+                  if (c.animated) collection[key].animCount++;
+                });
+              });
+              const filtered = Object.values(collection)
+                .filter(c => collectionSetFilter === "all" || history.some(p => p.setCode === collectionSetFilter && p.cards.some(pc => pc.name === c.name)))
+                .filter(c => collectionRarityFilter === "all" || RARITIES[c.rarityIdx] === collectionRarityFilter)
+                .filter(c => collectionClassFilter === "all" || CLASSES[c.classIdx] === collectionClassFilter)
+                .sort((a, b) => b.rarityIdx - a.rarityIdx || a.name.localeCompare(b.name));
+              return (
+                <div>
+                  {/* Filters */}
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8, justifyContent: "center" }}>
+                    {[["all", "All Sets"], ...Object.entries(SETS).reverse().map(([k, s]) => [s.code, s.name])].map(([val, label]) => (
+                      <button key={val} onClick={() => setCollectionSetFilter(val)} style={{
+                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                        border: collectionSetFilter === val ? `1px solid ${currentSet.color}` : "1px solid #333",
+                        background: collectionSetFilter === val ? `${currentSet.color}22` : "transparent",
+                        color: collectionSetFilter === val ? currentSet.color : "#666",
+                      }}>{label}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 12, justifyContent: "center" }}>
+                    {["all", ...RARITIES].map(r => (
+                      <button key={r} onClick={() => setCollectionRarityFilter(r)} style={{
+                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                        border: collectionRarityFilter === r ? `1px solid ${RARITY_COLORS[RARITIES.indexOf(r)] || currentSet.color}` : "1px solid #333",
+                        background: collectionRarityFilter === r ? `${RARITY_COLORS[RARITIES.indexOf(r)] || currentSet.color}22` : "transparent",
+                        color: collectionRarityFilter === r ? (RARITY_COLORS[RARITIES.indexOf(r)] || currentSet.color) : "#666",
+                      }}>{r === "all" ? "All Rarities" : r}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 12, justifyContent: "center" }}>
+                    {["all", ...CLASSES].map(cl => (
+                      <button key={cl} onClick={() => setCollectionClassFilter(cl)} style={{
+                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                        border: collectionClassFilter === cl ? `1px solid ${currentSet.color}` : "1px solid #333",
+                        background: collectionClassFilter === cl ? `${currentSet.color}22` : "transparent",
+                        color: collectionClassFilter === cl ? currentSet.color : "#666",
+                      }}>{cl === "all" ? "All Classes" : `${CLASS_ICONS[CLASSES.indexOf(cl)]} ${cl}`}</button>
+                    ))}
+                  </div>
+                  {/* Card list */}
+                  <div style={{ fontSize: 10, opacity: 0.4, marginBottom: 8, textAlign: "center" }}>{filtered.length} cards</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {filtered.map((c, i) => (
+                      <div key={i} style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                        padding: "6px 10px", borderRadius: 8, background: "#0d0d1e",
+                        border: `1px solid ${RARITY_COLORS[c.rarityIdx]}22`,
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ color: RARITY_COLORS[c.rarityIdx], fontSize: 9 }}>{"●".repeat(c.rarityIdx + 1)}</span>
+                          <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>{c.name}</span>
+                          <span style={{ opacity: 0.4, fontSize: 10 }}>{CLASS_ICONS[c.classIdx]}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, fontSize: 10 }}>
+                          {c.animCount > 0 && <span style={{ color: "#00BCD4" }}>✦{c.animCount}</span>}
+                          <span style={{ opacity: 0.6 }}>×{c.count}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         )}
 
         {/* ── MULTI PACK VIEW ── */}
