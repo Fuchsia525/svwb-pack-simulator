@@ -570,6 +570,14 @@ export default function PackSimulator() {
       set: currentSet.name, setCode: currentSet.code, cards: result.cards, packNum: stats.total + 1,
     }, ...prev].slice(0, 50));
   }, [currentSet, pityCounter, stats, playPackSound]);
+  const handleNextPack = useCallback(() => {
+    setPackCards(null);
+    setFlipped([]);
+    setAllFlipped(false);
+    setTimeout(() => {
+      handleOpenPack();
+    }, 50);
+  }, [handleOpenPack]);
 
   const handleFlipCard = useCallback((idx) => {
     if (flipped[idx]) return;
@@ -858,7 +866,7 @@ export default function PackSimulator() {
                       background: "#1a1a2e", color: "#ccc", fontSize: 13, cursor: "pointer",
                     }}>Flip All</button>
                   )}
-                  <button onClick={handleOpenPack} style={{
+                  <button onClick={handleNextPack} style={{
                     padding: "8px 28px", borderRadius: 8, border: "none",
                     background: allFlipped
                       ? `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`
