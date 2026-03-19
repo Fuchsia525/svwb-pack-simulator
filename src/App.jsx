@@ -25,10 +25,25 @@ const SETS = {
     ticketCards: ["Albert, Levin Stormsaber", "Dimension Climb", "Cerberus, Hellfire Unleashed", "Orchis, Newfound Heart"],
     cards: [
       // ── FORESTCRAFT ──
-      ["Fairy Convocation",0,0],["Fay Twinkletoes",0,0],["Capricious Sprite",0,0],["Workin' Grasshopper",0,0],["Elder Sagebrush",0,0],["Deepwood Fairy Beast",0,0],
-      ["Good Fairy of the Pond",0,1],["Baby Carbuncle",0,1],["Lambent Cairn",0,1],["Fragrantwood Whispers",0,1],["Aerin, Crystalian Frostward",0,1],
-      ["Killer Rhinoceroach",0,2],["Lily, Crystalian Innocence",0,2],["Godwood Staff",0,2],["Glade, Fragrantwood Ward",0,2],["Bayle, Luxglaive Warrior",0,2],
-      ["Aria, Lady of the Woods",0,3],["Opulent Rose Queen",0,3],["Amataz, Origin Blader",0,3],
+      ["Fay Twinkletoes",0,0,2,10111110],
+      ["Capricious Sprite",0,0,3,10111120],
+      ["Deepwood Fairy Beast",0,0,8,10111130],
+      ["Workin' Grasshopper",0,0,3,10111140],
+      ["Elder Sagebrush",0,0,4,10111150],
+      ["Fairy Convocation",0,0,1,10113110],
+      ["Good Fairy of the Pond",0,1,1,10121120],
+      ["Baby Carbuncle",0,1,2,10121130],
+      ["Lambent Cairn",0,1,2,10122110],
+      ["Fragrantwood Whispers",0,1,3,10123110],
+      ["Aerin, Crystalian Frostward",0,1,7,10121110],
+      ["Lily, Crystalian Innocence",0,2,2,10131110],
+      ["Glade, Fragrantwood Ward",0,2,5,10131120],
+      ["Bayle, Luxglaive Warrior",0,2,8,10131130],
+      ["Killer Rhinoceroach",0,2,3,10131140],
+      ["Godwood Staff",0,2,3,10132110],
+      ["Aria, Lady of the Woods",0,3,6,10141110],
+      ["Opulent Rose Queen",0,3,9,10141120],
+      ["Amataz, Origin Blader",0,3,3,10141130],
       // ── SWORDCRAFT ──
       ["Ignominious Samurai",1,0],["Ian, Lovebound Knight",1,0],["Lyrala, Luminous Potionwright",1,0],["Hound of War",1,0],["Knightly Rending",1,0],["Ernesta, Peace Hawker",1,0],
       ["Luminous Lancetrooper",1,1],["Luminous Commander",1,1],["Shinobi Squirrel",1,1],["Ironcrown Majesty",1,1],["Luminous Magus",1,1],
@@ -343,7 +358,7 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
   if (isPity) {
     const legs = getCardsByRarity(setCards, 3);
     const card = pickRandomCard(legs);
-    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: Math.random() < RATES.animatedChance };
+    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
   }
   const rates = isGuaranteed ? RATES.guaranteed : RATES.standard;
   const roll = weightedRandom(rates);
@@ -353,7 +368,7 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
       ? setCards.filter(c => c[2] === 3 && ticketCards.includes(c[0]))
       : getCardsByRarity(setCards, 3);
     const card = pickRandomCard(pool);
-    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: true, isTicket: true };
+    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: true, isTicket: true, cardId: card[4] };
   }
   else if (roll === "Legendary") rarityIdx = 3;
   else if (roll === "Gold") rarityIdx = 2;
@@ -364,10 +379,10 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
   if (pool.length === 0) {
     const fallback = getCardsByRarity(setCards, 0);
     const card = pickRandomCard(fallback);
-    return { name: card[0], classIdx: card[1], rarityIdx: 0, animated: Math.random() < RATES.animatedChance };
+    return { name: card[0], classIdx: card[1], rarityIdx: 0, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
   }
   const card = pickRandomCard(pool);
-  return { name: card[0], classIdx: card[1], rarityIdx, animated: Math.random() < RATES.animatedChance };
+  return { name: card[0], classIdx: card[1], rarityIdx, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
 }
 
 function openPack(setCards, pityCounter, ticketCards) {
@@ -472,7 +487,14 @@ function PackCard({ card, flipped, onClick, setColor }) {
               : card.rarityIdx === 2 ? RARITY_COLORS[2]
               : "#ccc",
           }}>
-            {card.name}
+            {card.cardId
+              ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${card.cardId}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={e => e.stopPropagation()}>
+                  {card.name}
+                </a>
+              : card.name}
           </div>
           {/* Rarity bar */}
           <div style={{
@@ -990,7 +1012,15 @@ export default function PackSimulator() {
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ color: RARITY_COLORS[c.rarityIdx], fontSize: 9 }}>{"●".repeat(c.rarityIdx + 1)}</span>
-                          <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>{c.name}</span>
+                          <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>
+                            {c.cardId
+                              ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>
+                                  {c.name}
+                                </a>
+                              : c.name}
+                          </span>
                           <span style={{ opacity: 0.4, fontSize: 10 }}>{CLASS_ICONS[c.classIdx]}</span>
                         </div>
                         <div style={{ display: "flex", gap: 8, fontSize: 10 }}>
@@ -1062,7 +1092,13 @@ export default function PackSimulator() {
                             background: `${RARITY_COLORS[3]}15`, border: `1px solid ${RARITY_COLORS[3]}44`,
                             color: RARITY_COLORS[3],
                           }}>
-                            {CLASS_ICONS[c.classIdx]} {c.name} {c.isTicket ? "🎫" : c.animated ? "✦" : ""}
+                            {CLASS_ICONS[c.classIdx]} {c.cardId
+                                          ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
+                                              target="_blank" rel="noopener noreferrer"
+                                              style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>
+                                              {c.name}
+                                            </a>
+                                          : c.name} {c.isTicket ? "🎫" : c.animated ? "✦" : ""}
                           </span>
                         ))}
                       </div>
@@ -1081,7 +1117,13 @@ export default function PackSimulator() {
                             background: `${RARITY_COLORS[2]}10`, border: `1px solid ${RARITY_COLORS[2]}33`,
                             color: RARITY_COLORS[2],
                           }}>
-                            {CLASS_ICONS[c.classIdx]} {c.name} {c.isTicket ? "🎫" : c.animated ? "✦" : ""}
+                            {CLASS_ICONS[c.classIdx]} {c.cardId
+                                          ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
+                                              target="_blank" rel="noopener noreferrer"
+                                              style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>
+                                              {c.name}
+                                            </a>
+                                          : c.name} {c.isTicket ? "🎫" : c.animated ? "✦" : ""}
                           </span>
                         ))}
                       </div>
@@ -1136,7 +1178,13 @@ export default function PackSimulator() {
                         color: RARITY_COLORS[c.rarityIdx],
                         fontWeight: c.rarityIdx >= 2 ? 600 : 400,
                       }}>
-                        {CLASS_ICONS[c.classIdx]} {c.name}{c.isTicket ? " 🎫" : c.animated ? " ✦" : ""}
+                        {CLASS_ICONS[c.classIdx]} {c.cardId
+                                                    ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
+                                                        target="_blank" rel="noopener noreferrer"
+                                                        style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>
+                                                        {c.name}
+                                                      </a>
+                                                    : c.name}{c.isTicket ? " 🎫" : c.animated ? " ✦" : ""}
                       </span>
                     ))}
                   </div>
