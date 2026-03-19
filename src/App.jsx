@@ -896,6 +896,12 @@ export default function PackSimulator() {
   const [collectionPPFilter, setCollectionPPFilter] = useState("all");
   const [showImportModal, setShowImportModal] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [showCraftModal, setShowCraftModal] = useState(false);
+  const [craftSearch, setCraftSearch] = useState("");
+  const [craftClassFilter, setCraftClassFilter] = useState("all");
+  const [craftRarityFilter, setCraftRarityFilter] = useState("all");
+  const [craftTypeFilter, setCraftTypeFilter] = useState("all");
+  const [craftPPFilter, setCraftPPFilter] = useState("all");
 
   useEffect(() => {
   const profiles = loadProfiles();
@@ -1443,6 +1449,12 @@ export default function PackSimulator() {
               }}>
                 📤 Export Collection (CSV)
               </button>
+              <button onClick={() => setShowCraftModal(true)} style={{
+                padding: "6px 16px", borderRadius: 6, border: `1px solid ${currentSet.color}`,
+                background: "transparent", color: currentSet.color, fontSize: 11, fontWeight: 600, cursor: "pointer",
+              }}>
+                ✦ Craft Cards
+              </button>
             </div>
             {history.length === 0 ? (
               <div style={{ textAlign: "center", padding: "50px 0", opacity: 0.4 }}>
@@ -1537,22 +1549,34 @@ export default function PackSimulator() {
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ color: RARITY_COLORS[c.rarityIdx], fontSize: 9 }}>{"●".repeat(c.rarityIdx + 1)}</span>
-                          <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>
-                            {c.cardId
-                              ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
-                                  target="_blank" rel="noopener noreferrer"
-                                  style={{ color: "inherit", textDecoration: "underline", cursor: "pointer" }}>
-                                  {c.name}
-                                </a>
-                              : c.name}
-                          </span>
+                          {c.cardId
+                            ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c.cardId}`}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400, textDecoration: "underline", cursor: "pointer" }}>
+                                {c.name}
+                              </a>
+                            : <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>{c.name}</span>}
                           <span style={{ opacity: 0.4, fontSize: 10 }}>{CLASS_ICONS[c.classIdx]}</span>
                         </div>
-                        <div style={{ display: "flex", gap: 8, fontSize: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10 }}>
                           {c.animCount > 0 && <span style={{ color: "#00BCD4" }}>✦{c.animCount}</span>}
                           <span style={{ opacity: 0.6 }}>×{c.count}</span>
+                          <button onClick={() => {
+                            if (!window.confirm(`Remove one copy of "${c.name}" from your collection?`)) return;
+                            const key = `${c.name}|${c.classIdx}|${c.rarityIdx}`;
+                            const updated = { ...importedCollection };
+                            const historyCount = c.count - (updated[key]?.count || 0);
+                            const currentImported = updated[key]?.count || 0;
+                            const newCount = currentImported - 1;
+                            if (newCount <= -historyCount) { delete updated[key]; }
+                            else { updated[key] = { ...(updated[key] || { name: c.name, classIdx: c.classIdx, rarityIdx: c.rarityIdx }), count: newCount }; }
+                            setImportedCollection(updated);
+                          }} style={{
+                            padding: "1px 6px", borderRadius: 4, border: "1px solid #e63946",
+                            background: "transparent", color: "#e63946", fontSize: 12, cursor: "pointer",
+                          }}>{"-"}</button>
                         </div>
-                      </div>
+                        </div>
                     ))}
                   </div>
                 </div>
@@ -1714,6 +1738,113 @@ export default function PackSimulator() {
           </div>
         )}
       </div>
+
+      {/* ═══ CRAFT MODAL ═══ */}
+      {showCraftModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+        }}>
+          <div style={{
+            background: "#1a1a2e", border: "1px solid #444", borderRadius: 12,
+            padding: 20, width: "90%", maxWidth: 560, maxHeight: "80vh",
+            display: "flex", flexDirection: "column", gap: 10,
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>✦ Craft Cards</span>
+              <button onClick={() => setShowCraftModal(false)} style={{
+                background: "none", border: "none", color: "#888", fontSize: 18, cursor: "pointer",
+              }}>✕</button>
+            </div>
+
+            {/* Search */}
+            <input value={craftSearch} onChange={e => setCraftSearch(e.target.value)}
+              placeholder="Search card name..."
+              style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #444", background: "#0d0d1e", color: "#fff", fontSize: 12 }} />
+
+            {/* Filters */}
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              {["all", ...CLASSES].map(c => (
+                <button key={c} onClick={() => setCraftClassFilter(c)} style={{
+                  padding: "3px 8px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                  border: craftClassFilter === c ? `1px solid ${currentSet.color}` : "1px solid #333",
+                  background: craftClassFilter === c ? `${currentSet.color}22` : "transparent",
+                  color: craftClassFilter === c ? currentSet.color : "#666",
+                }}>{c === "all" ? "All Classes" : c}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              {["all", ...RARITIES].map(r => (
+                <button key={r} onClick={() => setCraftRarityFilter(r)} style={{
+                  padding: "3px 8px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                  border: craftRarityFilter === r ? `1px solid ${currentSet.color}` : "1px solid #333",
+                  background: craftRarityFilter === r ? `${currentSet.color}22` : "transparent",
+                  color: craftRarityFilter === r ? currentSet.color : "#666",
+                }}>{r === "all" ? "All Rarities" : r}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              {["all", "Follower", "Amulet", "Spell"].map(t => (
+                <button key={t} onClick={() => setCraftTypeFilter(t)} style={{
+                  padding: "3px 8px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                  border: craftTypeFilter === t ? `1px solid ${currentSet.color}` : "1px solid #333",
+                  background: craftTypeFilter === t ? `${currentSet.color}22` : "transparent",
+                  color: craftTypeFilter === t ? currentSet.color : "#666",
+                }}>{t === "all" ? "All Types" : t}</button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              {["all", ...Array.from(new Set(Object.values(SETS).flatMap(s => s.cards.map(c => c[3])))).filter(Boolean).sort((a,b) => a-b)].map(pp => (
+                <button key={pp} onClick={() => setCraftPPFilter(pp === "all" ? "all" : String(pp))} style={{
+                  padding: "3px 8px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                  border: craftPPFilter === (pp === "all" ? "all" : String(pp)) ? `1px solid ${currentSet.color}` : "1px solid #333",
+                  background: craftPPFilter === (pp === "all" ? "all" : String(pp)) ? `${currentSet.color}22` : "transparent",
+                  color: craftPPFilter === (pp === "all" ? "all" : String(pp)) ? currentSet.color : "#666",
+                }}>{pp === "all" ? "All PP" : `${pp}PP`}</button>
+              ))}
+            </div>
+
+            {/* Card list */}
+            <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
+              {Object.values(SETS).flatMap(set => set.cards)
+                .filter(c => craftClassFilter === "all" || CLASSES[c[1]] === craftClassFilter)
+                .filter(c => craftRarityFilter === "all" || RARITIES[c[2]] === craftRarityFilter)
+                .filter(c => craftTypeFilter === "all" || getCardType(c[4]) === craftTypeFilter)
+                .filter(c => craftPPFilter === "all" || c[3] === parseInt(craftPPFilter))
+                .filter(c => craftSearch === "" || c[0].toLowerCase().includes(craftSearch.toLowerCase()))
+                .map((c, i) => {
+                  const key = `${c[0]}|${c[1]}|${c[2]}`;
+                  const owned = (importedCollection[key]?.count || 0);
+                  return (
+                    <div key={i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "5px 8px", borderRadius: 6, background: "#0d0d1e",
+                      border: `1px solid ${RARITY_COLORS[c[2]]}22`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: RARITY_COLORS[c[2]], fontSize: 10 }}>{"●".repeat(c[2]+1)}</span>
+                        <span style={{ fontSize: 11, color: RARITY_COLORS[c[2]] }}>{c[0]}</span>
+                        <span style={{ fontSize: 9, opacity: 0.4 }}>{CLASS_ICONS[c[1]]} · {c[3]}PP · {getCardType(c[4])}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {owned > 0 && <span style={{ fontSize: 10, opacity: 0.5 }}>x{owned}</span>}
+                        <button onClick={() => {
+                          const updated = { ...importedCollection };
+                          if (updated[key]) updated[key] = { ...updated[key], count: updated[key].count + 1 };
+                          else updated[key] = { name: c[0], classIdx: c[1], rarityIdx: c[2], pp: c[3], cardId: c[4], count: 1, animCount: 0 };
+                          setImportedCollection(updated);
+                        }} style={{
+                          padding: "2px 8px", borderRadius: 4, border: `1px solid ${currentSet.color}`,
+                          background: "transparent", color: currentSet.color, fontSize: 12, cursor: "pointer",
+                        }}>+</button>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ IMPORT MODAL ═══ */}
       {showImportModal && pendingImport && (
