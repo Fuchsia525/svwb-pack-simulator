@@ -854,6 +854,7 @@ function blankProfile() {
     pityCounter: Object.keys(SETS).reduce((acc, key) => { acc[key] = 0; return acc; }, {}),
     stats: { total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 },
     history: [],
+    importedCollection: {},
   };
 }
 
@@ -875,6 +876,7 @@ export default function PackSimulator() {
   const [pityCounter, setPityCounter] = useState(_initial.pityCounter);
   const [stats, setStats] = useState(_initial.stats);
   const [history, setHistory] = useState(_initial.history);
+  const [importedCollection, setImportedCollection] = useState(_initial.importedCollection || {});
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
@@ -883,11 +885,12 @@ export default function PackSimulator() {
   const [collectionClassFilter, setCollectionClassFilter] = useState("all");
 
   useEffect(() => {
-    const profiles = loadProfiles();
-    profiles[activeProfile] = { selectedSet, pityCounter, stats, history };
-    saveProfiles(profiles);
-    localStorage.setItem(ACTIVE_KEY, activeProfile);
-  }, [activeProfile, selectedSet, pityCounter, stats, history]);
+  const profiles = loadProfiles();
+  profiles[activeProfile] = { selectedSet, pityCounter, stats, history, importedCollection };
+  saveProfiles(profiles);
+  localStorage.setItem(ACTIVE_KEY, activeProfile);
+  localStorage.setItem("svwb-imported", JSON.stringify(importedCollection));
+}, [activeProfile, selectedSet, pityCounter, stats, history, importedCollection]);
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -1018,6 +1021,7 @@ export default function PackSimulator() {
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
 
   const resetAll = () => {
+    if (!window.confirm("Reset all stats, history and pity counters for this profile? This cannot be undone.")) return;
     setPackCards(null); setMultiResults(null); setPityCounter(Object.keys(SETS).reduce((acc, key) => { acc[key] = 0; return acc; }, {}));
     setStats({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
@@ -1049,6 +1053,7 @@ export default function PackSimulator() {
     setPityCounter(data.pityCounter);
     setStats(data.stats);
     setHistory(data.history);
+    setImportedCollection(data.importedCollection || {});
     setPackCards(null);
     setMultiResults(null);
     setFlipped([]);
@@ -1150,6 +1155,19 @@ export default function PackSimulator() {
               ))}
           <option value="__new__">+ New Profile</option>
         </select>
+        {activeProfile !== "Default" && (
+          <button onClick={() => {
+            if (!window.confirm(`Delete profile "${activeProfile}"? This cannot be undone.`)) return;
+            const profiles = loadProfiles();
+            delete profiles[activeProfile];
+            saveProfiles(profiles);
+            loadProfile(Object.keys(profiles)[0] || "Default");
+          }} style={{
+            background: "transparent", border: "1px solid #e63946",
+            color: "#e63946", borderRadius: 6, padding: "3px 8px",
+            fontSize: 11, cursor: "pointer",
+          }}>✕</button>
+        )}
       </div>
 
       {/* ═══ SET SELECTOR ═══ */}
@@ -1607,11 +1625,12 @@ export default function PackSimulator() {
   <a href="https://github.com/Fuchsia525/svwb-pack-simulator#readme" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
     About
   </a>
+  {" "}· Join the {" "}
   <a href="https://discord.gg/928fVs8U6h" target="_blank" rel="noopener noreferrer"
-    style={{ color: "#5865F2", fontSize: 11, textDecoration: "none", opacity: 0.7 }}>
-    Join the Discord to discuss, suggest features, and report bugs
+    style={{ color: "inherit"}}>
+    Discord 
   </a>
-  {" "}· Open source —{" "}
+  {" "}to discuss, suggest features, and report bugs · Open source —{" "}
   <a href="https://github.com/Fuchsia525/svwb-pack-simulator" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
     GitHub
   </a>
