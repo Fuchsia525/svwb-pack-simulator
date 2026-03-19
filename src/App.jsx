@@ -676,7 +676,7 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
   if (isPity) {
     const legs = getCardsByRarity(setCards, 3);
     const card = pickRandomCard(legs);
-    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
+    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: Math.random() < RATES.animatedChance, pp: card[3], cardId: card[4] };
   }
   const rates = isGuaranteed ? RATES.guaranteed : RATES.standard;
   const roll = weightedRandom(rates);
@@ -686,7 +686,7 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
       ? setCards.filter(c => c[2] === 3 && ticketCards.includes(c[0]))
       : getCardsByRarity(setCards, 3);
     const card = pickRandomCard(pool);
-    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: true, isTicket: true, cardId: card[4] };
+    return { name: card[0], classIdx: card[1], rarityIdx: 3, animated: true, isTicket: true, pp: card[3], cardId: card[4] };
   }
   else if (roll === "Legendary") rarityIdx = 3;
   else if (roll === "Gold") rarityIdx = 2;
@@ -697,10 +697,10 @@ function rollCard(setCards, isGuaranteed, isPity, ticketCards) {
   if (pool.length === 0) {
     const fallback = getCardsByRarity(setCards, 0);
     const card = pickRandomCard(fallback);
-    return { name: card[0], classIdx: card[1], rarityIdx: 0, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
+    return { name: card[0], classIdx: card[1], rarityIdx: 0, animated: Math.random() < RATES.animatedChance, pp: card[3], cardId: card[4] };
   }
   const card = pickRandomCard(pool);
-  return { name: card[0], classIdx: card[1], rarityIdx, animated: Math.random() < RATES.animatedChance, cardId: card[4] };
+  return { name: card[0], classIdx: card[1], rarityIdx, animated: Math.random() < RATES.animatedChance, pp: card[3], cardId: card[4] };
 }
 
 function openPack(setCards, pityCounter, ticketCards) {
@@ -718,6 +718,15 @@ function openPack(setCards, pityCounter, ticketCards) {
   }
   if (gotLegendary) newPity = 0;
   return { cards, pityCounter: newPity };
+}
+
+function getCardType(cardId) {
+  if (!cardId) return null;
+  const t = Math.floor(cardId / 100) % 10;
+  if (t === 1) return "Follower";
+  if (t === 2) return "Amulet";
+  if (t === 3) return "Spell";
+  return null;
 }
 
 // ─── CARD COMPONENT ──────────────────────────────────────────
@@ -883,6 +892,8 @@ export default function PackSimulator() {
   const [collectionSetFilter, setCollectionSetFilter] = useState("all");
   const [collectionRarityFilter, setCollectionRarityFilter] = useState("all");
   const [collectionClassFilter, setCollectionClassFilter] = useState("all");
+  const [collectionTypeFilter, setCollectionTypeFilter] = useState("all");
+  const [collectionPPFilter, setCollectionPPFilter] = useState("all");
   const [showImportModal, setShowImportModal] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
 
@@ -1459,6 +1470,8 @@ export default function PackSimulator() {
                 .filter(c => collectionSetFilter === "all" || history.some(p => p.setCode === collectionSetFilter && p.cards.some(pc => pc.name === c.name)))
                 .filter(c => collectionRarityFilter === "all" || RARITIES[c.rarityIdx] === collectionRarityFilter)
                 .filter(c => collectionClassFilter === "all" || CLASSES[c.classIdx] === collectionClassFilter)
+                .filter(c => collectionTypeFilter === "all" || getCardType(c.cardId) === collectionTypeFilter)
+                .filter(c => collectionPPFilter === "all" || c.pp === parseInt(collectionPPFilter))
                 .sort((a, b) => b.rarityIdx - a.rarityIdx || a.name.localeCompare(b.name));
               return (
                 <div>
@@ -1491,6 +1504,26 @@ export default function PackSimulator() {
                         background: collectionClassFilter === cl ? `${currentSet.color}22` : "transparent",
                         color: collectionClassFilter === cl ? currentSet.color : "#666",
                       }}>{cl === "all" ? "All Classes" : `${CLASS_ICONS[CLASSES.indexOf(cl)]} ${cl}`}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8, justifyContent: "center" }}>
+                    {["all", "Follower", "Amulet", "Spell"].map(t => (
+                      <button key={t} onClick={() => setCollectionTypeFilter(t)} style={{
+                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                        border: collectionTypeFilter === t ? `1px solid ${currentSet.color}` : "1px solid #333",
+                        background: collectionTypeFilter === t ? `${currentSet.color}22` : "transparent",
+                        color: collectionTypeFilter === t ? currentSet.color : "#666",
+                      }}>{t === "all" ? "All Types" : t}</button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8, justifyContent: "center" }}>
+                    {["all", ...Array.from(new Set(Object.values(SETS).flatMap(s => s.cards.map(c => c[3])))).filter(Boolean).sort((a,b) => a-b)].map(pp => (
+                      <button key={pp} onClick={() => setCollectionPPFilter(pp === "all" ? "all" : String(pp))} style={{
+                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
+                        border: collectionPPFilter === (pp === "all" ? "all" : String(pp)) ? `1px solid ${currentSet.color}` : "1px solid #333",
+                        background: collectionPPFilter === (pp === "all" ? "all" : String(pp)) ? `${currentSet.color}22` : "transparent",
+                        color: collectionPPFilter === (pp === "all" ? "all" : String(pp)) ? currentSet.color : "#666",
+                      }}>{pp === "all" ? "All PP" : `${pp}PP`}</button>
                     ))}
                   </div>
                   {/* Card list */}
