@@ -1607,6 +1607,10 @@ export default function PackSimulator() {
   <a href="https://github.com/Fuchsia525/svwb-pack-simulator#readme" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
     About
   </a>
+  <a href="https://discord.gg/928fVs8U6h" target="_blank" rel="noopener noreferrer"
+    style={{ color: "#5865F2", fontSize: 11, textDecoration: "none", opacity: 0.7 }}>
+    Join the Discord to discuss, suggest features, and report bugs
+  </a>
   {" "}· Open source —{" "}
   <a href="https://github.com/Fuchsia525/svwb-pack-simulator" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
     GitHub
