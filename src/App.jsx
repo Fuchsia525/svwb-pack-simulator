@@ -883,6 +883,8 @@ export default function PackSimulator() {
   const [collectionSetFilter, setCollectionSetFilter] = useState("all");
   const [collectionRarityFilter, setCollectionRarityFilter] = useState("all");
   const [collectionClassFilter, setCollectionClassFilter] = useState("all");
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingImport, setPendingImport] = useState(null);
 
   useEffect(() => {
   const profiles = loadProfiles();
@@ -1026,6 +1028,54 @@ export default function PackSimulator() {
     setStats({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
   };
+
+  const handleImportCSV = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 1024 * 1024) { alert("File too large. Maximum size is 1MB."); return; }
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const lines = evt.target.result.split("\n").filter(l => l.trim());
+    const parsed = {};
+    const unknown = [];
+    lines.slice(1).forEach(line => {
+      const cols = [];
+      let current = "", inQuotes = false;
+      for (const ch of line) {
+        if (ch === '"') { inQuotes = !inQuotes; }
+        else if (ch === ',' && !inQuotes) { cols.push(current); current = ""; }
+        else { current += ch; }
+      }
+      cols.push(current);
+      const name = cols[0]?.trim();
+      const copies = parseInt(cols[3]) || 0;
+      if (!name || copies <= 0) return;
+      let found = null;
+      for (const set of Object.values(SETS)) {
+        const match = set.cards.find(c => c[0] === name);
+        if (match) { found = match; break; }
+      }
+      if (!found) { unknown.push(name); return; }
+      const key = `${name}|${found[1]}|${found[2]}`;
+      parsed[key] = { name, classIdx: found[1], rarityIdx: found[2], count: copies, animCount: parseInt(cols[4]) || 0, cardId: found[4] };
+    });
+    if (Object.keys(parsed).length === 0) {
+      alert(`No valid cards found.${unknown.length ? ` Unknown cards: ${unknown.join(", ")}` : ""}`);
+      return;
+    }
+    const historyHasCards = history.length > 0;
+    const hasExisting = Object.keys(importedCollection).length > 0 || historyHasCards;
+    if (hasExisting) {
+      setPendingImport({ parsed, unknown });
+      setShowImportModal(true);
+    } else {
+      setImportedCollection(parsed);
+      if (unknown.length) alert(`Imported successfully. Skipped unknown cards: ${unknown.join(", ")}`);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+};
 
   const switchProfile = (name) => {
     if (name === "__new__") {
@@ -1368,6 +1418,21 @@ export default function PackSimulator() {
         {/* ── COLLECTION VIEW ── */}
         {view === "collection" && (
           <div>
+            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12, flexWrap: "wrap" }}>
+              <label style={{
+                padding: "6px 16px", borderRadius: 6, border: "1px solid #444",
+                background: "#1a1a2e", color: "#ccc", fontSize: 11, fontWeight: 600, cursor: "pointer",
+              }}>
+                📥 Import Collection (CSV)
+                <input type="file" accept=".csv" onChange={handleImportCSV} style={{ display: "none" }} />
+              </label>
+              <button onClick={exportCollection} style={{
+                padding: "6px 16px", borderRadius: 6, border: "1px solid #444",
+                background: "#1a1a2e", color: "#ccc", fontSize: 11, fontWeight: 600, cursor: "pointer",
+              }}>
+                📤 Export Collection (CSV)
+              </button>
+            </div>
             {history.length === 0 ? (
               <div style={{ textAlign: "center", padding: "50px 0", opacity: 0.4 }}>
                 No cards yet — open some packs!
@@ -1381,6 +1446,14 @@ export default function PackSimulator() {
                   collection[key].count++;
                   if (c.animated) collection[key].animCount++;
                 });
+              });
+              Object.entries(importedCollection).forEach(([key, val]) => {
+                if (collection[key]) {
+                  collection[key].count += val.count;
+                  collection[key].animCount += val.animCount;
+                } else {
+                  collection[key] = { ...val };
+                }
               });
               const filtered = Object.values(collection)
                 .filter(c => collectionSetFilter === "all" || history.some(p => p.setCode === collectionSetFilter && p.cards.some(pc => pc.name === c.name)))
@@ -1421,7 +1494,7 @@ export default function PackSimulator() {
                     ))}
                   </div>
                   {/* Card list */}
-                  <div style={{ fontSize: 10, opacity: 0.4, marginBottom: 8, textAlign: "center" }}>{filtered.length} cards</div>
+                  <div style={{ fontSize: 10, opacity: 0.4, marginBottom: 8, textAlign: "center" }}>{filtered.reduce((sum, c) => sum + c.count, 0)} cards</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {filtered.map((c, i) => (
                       <div key={i} style={{
@@ -1565,12 +1638,6 @@ export default function PackSimulator() {
                 }}>
                   📥 Export Pull Log (CSV)
                 </button>
-                <button onClick={exportCollection} style={{
-                  padding: "6px 16px", borderRadius: 6, border: "1px solid #444",
-                  background: "#1a1a2e", color: "#ccc", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                }}>
-                  📥 Export Collection (CSV)
-                </button>
               </div>
             )}
             <div style={{ maxHeight: 520, overflowY: "auto" }}>
@@ -1614,6 +1681,54 @@ export default function PackSimulator() {
           </div>
         )}
       </div>
+
+      {/* ═══ IMPORT MODAL ═══ */}
+      {showImportModal && pendingImport && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+        }}>
+          <div style={{
+            background: "#1a1a2e", border: "1px solid #444", borderRadius: 12,
+            padding: 24, maxWidth: 360, width: "90%", textAlign: "center",
+          }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Import CSV</div>
+            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 16 }}>
+              Your collection already has imported data. What would you like to do?
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+              <button onClick={() => {
+                const merged = { ...importedCollection };
+                Object.entries(pendingImport.parsed).forEach(([key, val]) => {
+                  if (merged[key]) {
+                    merged[key] = { ...merged[key], count: merged[key].count + val.count };
+                  } else {
+                    merged[key] = { ...val };
+                  }
+                });
+                setImportedCollection(merged);
+                setShowImportModal(false);
+                setPendingImport(null);
+                if (pendingImport.unknown.length) alert(`Skipped unknown cards: ${pendingImport.unknown.join(", ")}`);
+              }} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #444", background: "#0d0d1e", color: "#fff", fontSize: 12, cursor: "pointer" }}>
+                Merge
+              </button>
+              <button onClick={() => {
+                setImportedCollection(pendingImport.parsed);
+                setShowImportModal(false);
+                setPendingImport(null);
+                if (pendingImport.unknown.length) alert(`Skipped unknown cards: ${pendingImport.unknown.join(", ")}`);
+              }} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #e63946", background: "transparent", color: "#e63946", fontSize: 12, cursor: "pointer" }}>
+                Replace
+              </button>
+              <button onClick={() => { setShowImportModal(false); setPendingImport(null); }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #444", background: "transparent", color: "#888", fontSize: 12, cursor: "pointer" }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
      {/* ═══ FOOTER ═══ */}
 <div style={{ textAlign: "center", padding: "8px 0 20px", fontSize: 9, opacity: 0.4, lineHeight: 2 }}>
