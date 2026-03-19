@@ -647,7 +647,7 @@ export default function PackSimulator() {
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
 
   const resetAll = () => {
-    setPackCards(null); setMultiResults(null); setPityCounter({ legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0, apocalypse_pact: 0 });
+    setPackCards(null); setMultiResults(null); setPityCounter(Object.keys(SETS).reduce((acc, key) => { acc[key] = 0; return acc; }, {}));
     setStats({ total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 });
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
   };
