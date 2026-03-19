@@ -830,33 +830,64 @@ function PackCard({ card, flipped, onClick, setColor }) {
   );
 }
 
+// ─── PROFILE HELPERS ─────────────────────────────────────────
+const PROFILE_KEY = "svwb-profiles";
+const ACTIVE_KEY = "svwb-active-profile";
+const MAX_PROFILES = 20;
+
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+}
+
+function getActiveProfileName() {
+  return localStorage.getItem(ACTIVE_KEY) || "Default";
+}
+
+function blankProfile() {
+  return {
+    selectedSet: "legends_rise",
+    pityCounter: Object.keys(SETS).reduce((acc, key) => { acc[key] = 0; return acc; }, {}),
+    stats: { total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 },
+    history: [],
+  };
+}
+
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 export default function PackSimulator() {
-  const [selectedSet, setSelectedSet] = useState(Object.keys(SETS).at(-1));
+  const _initial = (() => {
+    const profiles = loadProfiles();
+    const name = getActiveProfileName();
+    return profiles[name] || blankProfile();
+  })();
+  const [activeProfile, setActiveProfile] = useState(getActiveProfileName());
+  const [selectedSet, setSelectedSet] = useState(_initial.selectedSet);
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
   const [allFlipped, setAllFlipped] = useState(false);
-  const [pityCounter, setPityCounter] = useState(() => {
-  const saved = localStorage.getItem("pityCounter");
-  return saved ? JSON.parse(saved) : { legends_rise: 0, infinity_evolved: 0, heirs_omen: 0, skybound_dragons: 0, blossoming_fate: 0, apocalypse_pact: 0 };
-});
-  const [stats, setStats] = useState(() => {
-  const saved = localStorage.getItem("stats");
-  return saved ? JSON.parse(saved) : { total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 };
-});
   const [multiCount, setMultiCount] = useState(10);
   const [multiResults, setMultiResults] = useState(null);
   const [showStats, setShowStats] = useState(false);
-  const [history, setHistory] = useState(() => {
-  const saved = localStorage.getItem("history");
-  return saved ? JSON.parse(saved) : [];
-});
+  const [pityCounter, setPityCounter] = useState(_initial.pityCounter);
+  const [stats, setStats] = useState(_initial.stats);
+  const [history, setHistory] = useState(_initial.history);
   const [view, setView] = useState("pack");
   const [showRates, setShowRates] = useState(false);
   const audioCtx = useRef(null);
   const [collectionSetFilter, setCollectionSetFilter] = useState("all");
   const [collectionRarityFilter, setCollectionRarityFilter] = useState("all");
   const [collectionClassFilter, setCollectionClassFilter] = useState("all");
+
+  useEffect(() => {
+    const profiles = loadProfiles();
+    profiles[activeProfile] = { selectedSet, pityCounter, stats, history };
+    saveProfiles(profiles);
+    localStorage.setItem(ACTIVE_KEY, activeProfile);
+  }, [activeProfile, selectedSet, pityCounter, stats, history]);
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -992,6 +1023,39 @@ export default function PackSimulator() {
     setHistory([]); setFlipped([]); setAllFlipped(false); setView("pack");
   };
 
+  const switchProfile = (name) => {
+    if (name === "__new__") {
+      const newName = window.prompt("Enter a name for the new profile:");
+      if (!newName || !newName.trim()) return;
+      const trimmed = newName.trim();
+      const profiles = loadProfiles();
+      if (Object.keys(profiles).length >= MAX_PROFILES) {
+        alert("Maximum number of profiles reached (20).");
+        return;
+      }
+      if (!profiles[trimmed]) profiles[trimmed] = blankProfile();
+      saveProfiles(profiles);
+      loadProfile(trimmed);
+    } else {
+      loadProfile(name);
+    }
+  };
+
+  const loadProfile = (name) => {
+    const profiles = loadProfiles();
+    const data = profiles[name] || blankProfile();
+    setActiveProfile(name);
+    setSelectedSet(data.selectedSet);
+    setPityCounter(data.pityCounter);
+    setStats(data.stats);
+    setHistory(data.history);
+    setPackCards(null);
+    setMultiResults(null);
+    setFlipped([]);
+    setAllFlipped(false);
+    setView("pack");
+  };
+
   const exportHistory = useCallback(() => {
     if (history.length === 0) return;
     const rows = [["Pack #", "Set", "Slot", "Card Name", "Class", "Rarity", "Animated", "Exchange Ticket"].join(",")];
@@ -1067,6 +1131,25 @@ export default function PackSimulator() {
           ✦ Pack Opening Simulator ✦
         </h1>
         <p style={{ fontSize: 11, opacity: 0.4, margin: "2px 0 0" }}>Shadowverse: Worlds Beyond · Official rates</p>
+      </div>
+
+      {/* ═══ PROFILE SWITCHER ═══ */}
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, padding: "8px 0 4px" }}>
+        <span style={{ fontSize: 11, opacity: 0.5 }}>Profile:</span>
+        <select
+          value={activeProfile}
+          onChange={e => switchProfile(e.target.value)}
+          style={{
+            background: "#1a1a2e", color: "#fff", border: "1px solid #444",
+            borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer",
+          }}>
+          {Object.keys(loadProfiles()).length === 0
+            ? <option value="Default">Default</option>
+            : Object.keys(loadProfiles()).map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+          <option value="__new__">+ New Profile</option>
+        </select>
       </div>
 
       {/* ═══ SET SELECTOR ═══ */}
