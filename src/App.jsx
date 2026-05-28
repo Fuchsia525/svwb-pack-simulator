@@ -1959,7 +1959,15 @@ export default function PackSimulator() {
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ color: RARITY_COLORS[c[2]], fontSize: 10 }}>{"●".repeat(c[2]+1)}</span>
-                        <span style={{ fontSize: 11, color: RARITY_COLORS[c[2]] }}>{c[0]}</span>
+                        <span style={{ fontSize: 11, color: RARITY_COLORS[c[2]] }}>
+                          {c[4]
+                            ? <a href={`https://shadowverse-wb.com/en/deck/cardslist/card/?card_id=${c[4]}`}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{ color: RARITY_COLORS[c[2]], textDecoration: "underline", cursor: "pointer" }}>
+                                {c[0]}
+                              </a>
+                            : c[0]}
+                        </span>
                         <span style={{ fontSize: 9, opacity: 0.4 }}>{CLASS_ICONS[c[1]]} · {c[3]}PP · {getCardType(c[4])}</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
