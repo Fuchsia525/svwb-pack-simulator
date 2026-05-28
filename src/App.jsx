@@ -1819,7 +1819,8 @@ export default function PackSimulator() {
             <div style={{ maxHeight: 520, overflowY: "auto" }}>
             {history.length === 0 ? (
               <div style={{ textAlign: "center", padding: 50, opacity: 0.4, fontSize: 13 }}>No packs opened yet</div>
-            ) : history.map((pack, pi) => {
+              )
+              : history.filter(pack => selectedFormat === "unlimited" || Object.entries(SETS).some(([key, set]) => ROTATION_SETS.has(key) && set.code === pack.setCode)).map((pack, pi) => {
               const hasLegendary = pack.cards.some(c => c.rarityIdx === 3);
               const hasGold = pack.cards.some(c => c.rarityIdx === 2);
               return (
