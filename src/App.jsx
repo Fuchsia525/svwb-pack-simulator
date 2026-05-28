@@ -1003,6 +1003,8 @@ export default function PackSimulator() {
   const [craftPPFilter, setCraftPPFilter] = useState("all");
   const [craftFormat, setCraftFormat] = useState("unlimited");
   const [collectionSearch, setCollectionSearch] = useState("");
+  const [showCollectionFilters, setShowCollectionFilters] = useState(false);
+const [showCraftFilters, setShowCraftFilters] = useState(false);
 
   useEffect(() => {
   const profiles = loadProfiles();
@@ -1613,16 +1615,14 @@ export default function PackSimulator() {
                         placeholder="Search card name..."
                         style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #444", background: "#0d0d1e", color: "#fff", fontSize: 12, width: "100%", marginBottom: 8 }} />
                   {/* Filters */}
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8, justifyContent: "center" }}>
-                    {[["all", "All Sets"], ...Object.entries(SETS).reverse().map(([k, s]) => [s.code, s.name])].map(([val, label]) => (
-                      <button key={val} onClick={() => setCollectionSetFilter(val)} style={{
-                        padding: "4px 10px", borderRadius: 20, fontSize: 10, cursor: "pointer",
-                        border: collectionSetFilter === val ? `1px solid ${currentSet.color}` : "1px solid #333",
-                        background: collectionSetFilter === val ? `${currentSet.color}22` : "transparent",
-                        color: collectionSetFilter === val ? currentSet.color : "#666",
-                      }}>{label}</button>
-                    ))}
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                    <button onClick={() => setShowCollectionFilters(!showCollectionFilters)} style={{
+                      padding: "4px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer",
+                      border: `1px solid ${currentSet.color}`, background: "transparent",
+                      color: currentSet.color, fontWeight: 600,
+                    }}>{showCollectionFilters ? "▲ Filters" : "▼ Filters"}</button>
                   </div>
+                  {showCollectionFilters && <div>
                   <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 12, justifyContent: "center" }}>
                     {["all", ...RARITIES].map(r => (
                       <button key={r} onClick={() => setCollectionRarityFilter(r)} style={{
@@ -1663,6 +1663,7 @@ export default function PackSimulator() {
                       }}>{pp === "all" ? "All PP" : `${pp}PP`}</button>
                     ))}
                   </div>
+                  </div>}
                   {/* Card list */}
                   <div style={{ fontSize: 10, opacity: 0.4, marginBottom: 8, textAlign: "center" }}>{filtered.reduce((sum, c) => sum + c.count, 0)} cards</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1834,9 +1835,16 @@ export default function PackSimulator() {
                   background: "#0d0d1e", borderRadius: 8, padding: "8px 10px", marginBottom: 5,
                   border: hasLegendary ? `1px solid ${RARITY_COLORS[3]}44` : hasGold ? `1px solid ${RARITY_COLORS[2]}22` : "1px solid #1a1a2e",
                 }}>
-                  <div style={{ fontSize: 9, opacity: 0.4, marginBottom: 3 }}>
+                  <div style={{ fontSize: 9, opacity: 0.4, marginBottom: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     Pack #{pack.packNum} · {pack.setCode}
                     {hasLegendary && <span style={{ color: RARITY_COLORS[3], marginLeft: 6 }}>★ LEGENDARY</span>}
+                    <button onClick={() => {
+                      if (!window.confirm(`Delete pack #${pack.packNum}?`)) return;
+                      setHistory(prev => prev.filter((_, i) => i !== pi));
+                    }} style={{
+                      background: "transparent", border: "1px solid #e63946",
+                      color: "#e63946", borderRadius: 4, fontSize: 9, padding: "1px 5px", cursor: "pointer",
+                    }}>✕</button>
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                     {pack.cards.map((c, ci) => (
@@ -1903,6 +1911,14 @@ export default function PackSimulator() {
             </div>
 
             {/* Filters */}
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+              <button onClick={() => setShowCraftFilters(!showCraftFilters)} style={{
+                padding: "4px 14px", borderRadius: 20, fontSize: 11, cursor: "pointer",
+                border: `1px solid ${currentSet.color}`, background: "transparent",
+                color: currentSet.color, fontWeight: 600,
+              }}>{showCraftFilters ? "▲ Filters" : "▼ Filters"}</button>
+            </div>
+            {showCraftFilters && <div>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               {["all", ...CLASSES].map(c => (
                 <button key={c} onClick={() => setCraftClassFilter(c)} style={{
@@ -1943,6 +1959,7 @@ export default function PackSimulator() {
                 }}>{pp === "all" ? "All PP" : `${pp}PP`}</button>
               ))}
             </div>
+            </div>}
 
             {/* Card list */}
             <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
