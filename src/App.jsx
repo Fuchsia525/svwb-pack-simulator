@@ -1675,7 +1675,7 @@ export default function PackSimulator() {
                                 {c.name}
                               </a>
                             : <span style={{ color: RARITY_COLORS[c.rarityIdx], fontWeight: c.rarityIdx >= 2 ? 600 : 400 }}>{c.name}</span>}
-                          <span style={{ opacity: 0.4, fontSize: 10 }}>{CLASS_ICONS[c.classIdx]}</span>
+                          <span style={{ opacity: 0.4, fontSize: 9 }}>{CLASS_ICONS[c.classIdx]} · {c.pp}PP · {getCardType(c.cardId)} · {Object.entries(SETS).find(([, set]) => set.cards.some(card => card[0] === c.name))?.[1]?.code}</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10 }}>
                           {c.animCount > 0 && <span style={{ color: "#00BCD4" }}>✦{c.animCount}</span>}
@@ -1968,7 +1968,7 @@ export default function PackSimulator() {
                               </a>
                             : c[0]}
                         </span>
-                        <span style={{ fontSize: 9, opacity: 0.4 }}>{CLASS_ICONS[c[1]]} · {c[3]}PP · {getCardType(c[4])}</span>
+                        <span style={{ fontSize: 9, opacity: 0.4 }}>{CLASS_ICONS[c[1]]} · {c[3]}PP · {getCardType(c[4])} · {Object.entries(SETS).find(([, set]) => set.cards.some(card => card[0] === c[0]))?.[1]?.code}</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         {owned > 0 && <span style={{ fontSize: 10, opacity: 0.5 }}>x{owned}</span>}
