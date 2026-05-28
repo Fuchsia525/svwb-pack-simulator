@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+const VERSION = "3.0";
 
 // ══════════════════════════════════════════════════════════════
 // SHADOWVERSE: WORLDS BEYOND — PACK OPENING SIMULATOR
@@ -1001,6 +1002,7 @@ export default function PackSimulator() {
   const [craftTypeFilter, setCraftTypeFilter] = useState("all");
   const [craftPPFilter, setCraftPPFilter] = useState("all");
   const [craftFormat, setCraftFormat] = useState("unlimited");
+  const [collectionSearch, setCollectionSearch] = useState("");
 
   useEffect(() => {
   const profiles = loadProfiles();
@@ -1603,9 +1605,13 @@ export default function PackSimulator() {
                 .filter(c => collectionTypeFilter === "all" || getCardType(c.cardId) === collectionTypeFilter)
                 .filter(c => collectionPPFilter === "all" || c.pp === parseInt(collectionPPFilter))
                 .filter(c => selectedFormat === "unlimited" || Object.entries(SETS).some(([key, set]) => ROTATION_SETS.has(key) && set.cards.some(card => card[0] === c.name)))
+                .filter(c => collectionSearch === "" || c.name.toLowerCase().includes(collectionSearch.toLowerCase()))
                 .sort((a, b) => b.rarityIdx - a.rarityIdx || a.name.localeCompare(b.name));
               return (
                 <div>
+                  <input value={collectionSearch} onChange={e => setCollectionSearch(e.target.value)}
+                        placeholder="Search card name..."
+                        style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #444", background: "#0d0d1e", color: "#fff", fontSize: 12, width: "100%", marginBottom: 8 }} />
                   {/* Filters */}
                   <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8, justifyContent: "center" }}>
                     {[["all", "All Sets"], ...Object.entries(SETS).reverse().map(([k, s]) => [s.code, s.name])].map(([val, label]) => (
@@ -2040,7 +2046,7 @@ export default function PackSimulator() {
 
      {/* ═══ FOOTER ═══ */}
 <div style={{ textAlign: "center", padding: "8px 0 20px", fontSize: 9, opacity: 0.4, lineHeight: 2 }}>
-  Fan-made project · Made by{" "}
+  Fan-made project · v{VERSION} · Made by{" "}
   <a href="https://fuchsiathebiscuit.carrd.co/" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
     Fuchsia the Biscuit
   </a>
