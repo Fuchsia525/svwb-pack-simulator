@@ -1000,6 +1000,7 @@ export default function PackSimulator() {
   const [craftRarityFilter, setCraftRarityFilter] = useState("all");
   const [craftTypeFilter, setCraftTypeFilter] = useState("all");
   const [craftPPFilter, setCraftPPFilter] = useState("all");
+  const [craftFormat, setCraftFormat] = useState("unlimited");
 
   useEffect(() => {
   const profiles = loadProfiles();
@@ -1879,6 +1880,20 @@ export default function PackSimulator() {
             <input value={craftSearch} onChange={e => setCraftSearch(e.target.value)}
               placeholder="Search card name..."
               style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #444", background: "#0d0d1e", color: "#fff", fontSize: 12 }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              {["rotation", "unlimited"].map(fmt => (
+                <button key={fmt} onClick={() => setCraftFormat(fmt)}
+                  style={{
+                    padding: "4px 16px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                    border: craftFormat === fmt ? `1px solid ${currentSet.color}` : "1px solid #333",
+                    background: craftFormat === fmt ? `${currentSet.color}22` : "transparent",
+                    color: craftFormat === fmt ? currentSet.color : "#666",
+                    textTransform: "capitalize",
+                  }}>
+                  {fmt}
+                </button>
+              ))}
+            </div>
 
             {/* Filters */}
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -1924,7 +1939,9 @@ export default function PackSimulator() {
 
             {/* Card list */}
             <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-              {Object.values(SETS).flatMap(set => set.cards)
+              {Object.entries(SETS).flatMap(([key, set]) => set.cards.map(c => ({ card: c, setKey: key })))
+                .filter(({ setKey }) => craftFormat === "unlimited" || ROTATION_SETS.has(setKey))
+                .map(({ card }) => card)
                 .filter(c => craftClassFilter === "all" || CLASSES[c[1]] === craftClassFilter)
                 .filter(c => craftRarityFilter === "all" || RARITIES[c[2]] === craftRarityFilter)
                 .filter(c => craftTypeFilter === "all" || getCardType(c[4]) === craftTypeFilter)
