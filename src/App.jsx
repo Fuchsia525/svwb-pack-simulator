@@ -740,6 +740,8 @@ const SETS = {
   }
 };
 
+const ROTATION_SETS = new Set(Object.keys(SETS).slice(-6));
+
 // ─── RATES (Official from Cygames via GameWith) ──────────────
 const RATES = {
   standard: { Bronze: 0.6744, Silver: 0.25, Gold: 0.06, Legendary: 0.015, Ticket: 0.0006 },
@@ -954,6 +956,7 @@ function getActiveProfileName() {
 function blankProfile() {
   return {
     selectedSet: Object.keys(SETS).at(-1),
+    selectedFormat: "rotation",
     pityCounter: Object.keys(SETS).reduce((acc, key) => { acc[key] = 0; return acc; }, {}),
     stats: { total: 0, Bronze: 0, Silver: 0, Gold: 0, Legendary: 0, animated: 0, tickets: 0 },
     history: [],
@@ -970,6 +973,7 @@ export default function PackSimulator() {
   })();
   const [activeProfile, setActiveProfile] = useState(getActiveProfileName());
   const [selectedSet, setSelectedSet] = useState(_initial.selectedSet);
+  const [selectedFormat, setSelectedFormat] = useState(_initial.selectedFormat || "rotation");
   const [packCards, setPackCards] = useState(null);
   const [flipped, setFlipped] = useState([]);
   const [allFlipped, setAllFlipped] = useState(false);
@@ -999,11 +1003,11 @@ export default function PackSimulator() {
 
   useEffect(() => {
   const profiles = loadProfiles();
-  profiles[activeProfile] = { selectedSet, pityCounter, stats, history, importedCollection };
+  profiles[activeProfile] = { selectedSet, selectedFormat, pityCounter, stats, history, importedCollection };
   saveProfiles(profiles);
   localStorage.setItem(ACTIVE_KEY, activeProfile);
   localStorage.setItem("svwb-imported", JSON.stringify(importedCollection));
-}, [activeProfile, selectedSet, pityCounter, stats, history, importedCollection]);
+}, [activeProfile, selectedSet, selectedFormat, pityCounter, stats, history, importedCollection]);
 
   const playSound = useCallback((freq, dur, type = "sine") => {
     try {
@@ -1211,6 +1215,7 @@ export default function PackSimulator() {
     const data = profiles[name] || blankProfile();
     setActiveProfile(name);
     setSelectedSet(data.selectedSet);
+    setSelectedFormat(data.selectedFormat || "rotation");
     setPityCounter(data.pityCounter);
     setStats(data.stats);
     setHistory(data.history);
@@ -1331,6 +1336,22 @@ export default function PackSimulator() {
         )}
       </div>
 
+      {/* ═══ FORMAT TOGGLE ═══ */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 8, padding: "4px 0 8px" }}>
+        {["rotation", "unlimited"].map(fmt => (
+          <button key={fmt} onClick={() => setSelectedFormat(fmt)}
+            style={{
+              padding: "4px 16px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer",
+              border: selectedFormat === fmt ? `1px solid ${currentSet.color}` : "1px solid #333",
+              background: selectedFormat === fmt ? `${currentSet.color}22` : "transparent",
+              color: selectedFormat === fmt ? currentSet.color : "#666",
+              textTransform: "capitalize",
+            }}>
+            {fmt}
+          </button>
+        ))}
+      </div>
+
       {/* ═══ SET SELECTOR ═══ */}
       <div style={{ display: "flex", gap: 5, padding: "8px 0 10px", overflowX: "auto", justifyContent: "center", flexWrap: "wrap" }}>
         {Object.entries(SETS).reverse().map(([key, set]) => (
@@ -1340,6 +1361,8 @@ export default function PackSimulator() {
               background: selectedSet === key ? `${set.color}22` : "transparent",
               color: selectedSet === key ? set.color : "#666", fontSize: 11, fontWeight: 600,
               cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap",
+              opacity: selectedFormat === "rotation" && !ROTATION_SETS.has(key) ? 0.3 : 1,
+              pointerEvents: selectedFormat === "rotation" && !ROTATION_SETS.has(key) ? "none" : "auto",
             }}>
             {set.name}
           </button>
@@ -1578,6 +1601,7 @@ export default function PackSimulator() {
                 .filter(c => collectionClassFilter === "all" || CLASSES[c.classIdx] === collectionClassFilter)
                 .filter(c => collectionTypeFilter === "all" || getCardType(c.cardId) === collectionTypeFilter)
                 .filter(c => collectionPPFilter === "all" || c.pp === parseInt(collectionPPFilter))
+                .filter(c => selectedFormat === "unlimited" || Object.entries(SETS).some(([key, set]) => ROTATION_SETS.has(key) && set.cards.some(card => card[0] === c.name)))
                 .sort((a, b) => b.rarityIdx - a.rarityIdx || a.name.localeCompare(b.name));
               return (
                 <div>
