@@ -738,7 +738,102 @@ const SETS = {
       ["Illamrita, Designated Target",7,3,6,10704110],
       ["Altaro, Mayor of Babelon",7,3,3,10704120],
     ]
-  }
+  },
+  chronicle_of_destiny: {
+    name: "Chronicle of Destiny",
+    code: "CD",
+    date: "June 29, 2026",
+    color: "#d4a843",
+    ticketCards: ["Lumiore & Argente, Shining Wings", "Zoe, Dazzling Hope"],
+    cards: [
+      // ── FORESTCRAFT ──
+      ["Marlone, Scales of the Past",0,0,7,10811110],  // Bronze Follower N1
+      ["Citrus, Heretical Hermit",0,0,3,10811120],      // Bronze Follower N2
+      ["Moelle, Gloomy Maiden",0,0,1,10811130],         // Bronze Follower N3
+      ["Ruflet, Primeval Fairy",0,1,2,10812110],        // Silver Follower N1
+      ["Lycoris, Barbs of Passion",0,1,4,10812120],     // Silver Follower N2
+      ["Peaceful Solitude",0,1,4,10812310],             // Silver Spell N1
+      ["Michelle, Kind Mindreader",0,2,6,10813110],     // Gold Follower N1
+      ["Curiosity Abounds",0,2,5,10813310],             // Gold Spell N1
+      ["Setus & Maisha, Bladerights",0,3,7,10814110],   // Legendary Follower N1
+      ["Tia, Eternal Crystalian",0,3,2,10814120],       // Legendary Follower N2
+      // ── SWORDCRAFT ──
+      ["Naht & Vince, Force and Order",1,0,7,10821110],  // Bronze Follower N1
+      ["Shaili, Prowling Assassin",1,0,2,10821120],       // Bronze Follower N2
+      ["Sasha, Knight Everlasting",1,0,4,10821130],       // Bronze Follower N3
+      ["Katze, Magical Thief",1,1,3,10822110],            // Silver Follower N1
+      ["Oda Nobunaga",1,1,10,10822120],                   // Silver Follower N2
+      ["Shared Existence",1,1,4,10822310],                // Silver Spell N1
+      ["Okita Souji",1,2,3,10823110],                     // Gold Follower N1
+      ["Slice of Domesticity",1,2,2,10823310],            // Gold Spell N1
+      ["Bunny & Baron, Fate's Bullet",1,3,5,10824110],    // Legendary Follower N1
+      ["Mars, Conflagrant Commander",1,3,8,10824120],     // Legendary Follower N2
+      // ── RUNECRAFT ──
+      ["Meowskers, Roly-Poly Mk II & Djeana",2,0,2,10831110],  // Bronze Follower N1
+      ["Poppy, Mysterian Secretary",2,0,2,10831120],             // Bronze Follower N2
+      ["Stormy Blast",2,0,1,10831310],                           // Bronze Spell N1
+      ["Sammy & Marie, Flowers of Joy",2,1,5,10832110],          // Silver Follower N1
+      ["Harmonious Meal",2,1,2,10832310],                        // Silver Spell N1
+      ["Earth-Shattering Bolt",2,1,5,10832320],                  // Silver Spell N2
+      ["Tico, Mysterian Spellcrafter",2,2,3,10833110],           // Gold Follower N1
+      ["Amethyst's Naptime",2,2,3,10833310],                     // Gold Spell N1
+      ["Tetra & Ladica, Forest BFFs",2,3,6,10834110],            // Legendary Follower N1
+      ["Ginger, Disastrous Word",2,3,7,10834120],                // Legendary Follower N2
+      // ── DRAGONCRAFT ──
+      ["Gido, Leader of the Pack",3,0,4,10841110],          // Bronze Follower N1
+      ["Sandstorm Watchdragon",3,0,7,10841120],              // Bronze Follower N2
+      ["Spirit of Wadatsumi",3,0,2,10841130],                // Bronze Follower N3
+      ["Reef & Lolo, Serene Sirens",3,1,5,10842110],         // Silver Follower N1
+      ["Kimika, Cook of Happiness",3,1,2,10842120],          // Silver Follower N2
+      ["Art of Decay",3,1,6,10842310],                       // Silver Spell N1
+      ["Giada, Peerless Flame of War",3,2,6,10843110],       // Gold Follower N1
+      ["Ephemeral Foxfire",3,2,1,10843120],                  // Gold Follower N2
+      ["Drache & Aluzard, Burning Blood",3,3,4,10844110],    // Legendary Follower N1
+      ["Lumiore & Argente, Shining Wings",3,3,8,10844120],   // Legendary Follower N2
+      // ── ABYSSCRAFT ──
+      ["Anisage, Clear Resolve",4,0,4,10851110],         // Bronze Follower N1
+      ["Lilith, Devilish Cutie",4,0,1,10851120],          // Bronze Follower N2
+      ["Limil, Devilish Bunny",4,0,2,10851130],           // Bronze Follower N3
+      ["Fiole, Devilish Matriarch",4,1,6,10852110],       // Silver Follower N1
+      ["Marsha, Dark Knight",4,1,5,10852120],             // Silver Follower N2
+      ["Bittersweet Departures",4,1,3,10852310],          // Silver Spell N1
+      ["Suzy, Sincere Hexcaster",4,2,4,10853110],         // Gold Follower N1
+      ["Ebb and Flow",4,2,2,10853310],                    // Gold Spell N1
+      ["Itsurugi & Taketsumi, Brothers",4,3,8,10854110],  // Legendary Follower N1
+      ["Ceres, Liminal Rose",4,3,5,10854120],             // Legendary Follower N2
+      // ── HAVENCRAFT ──
+      ["Lilium, Witch of the Tomes",5,0,2,10861110],      // Bronze Follower N1
+      ["Theresa, Ergon Priestess",5,0,7,10861120],         // Bronze Follower N2
+      ["Grant, Hunter of Undeath",5,0,5,10861130],         // Bronze Follower N3
+      ["Edeth, Voice of Heaven",5,1,8,10862110],           // Silver Follower N1
+      ["Viche, Abyssal Researcher",5,1,6,10862120],        // Silver Follower N2
+      ["Lingering Threat",5,1,2,10862310],                 // Silver Spell N1
+      ["Colette, Holy Exorcist",5,2,3,10863110],           // Gold Follower N1
+      ["Academy Hijinks",5,2,2,10863210],                  // Gold Amulet N1
+      ["Verdilia & Castelle, Sisters",5,3,7,10864110],     // Legendary Follower N1
+      ["Zoe, Dazzling Hope",5,3,5,10864120],               // Legendary Follower N2
+      // ── PORTALCRAFT ──
+      ["Kratos, Everyday Joy",6,0,7,10871110],           // Bronze Follower N1
+      ["Leona, Overbearing Guardian",6,0,2,10871120],    // Bronze Follower N2
+      ["Zerk, Artifact Manipulator",6,0,1,10871130],     // Bronze Follower N3
+      ["Layla, Artificial Gift of Life",6,1,4,10872110], // Silver Follower N1
+      ["Lazuli, Gateway Connector",6,1,3,10872120],      // Silver Follower N2
+      ["Unsullied Days",6,1,3,10872310],                 // Silver Spell N1
+      ["Miriam, Reciprocator",6,2,7,10873110],           // Gold Follower N1
+      ["The Journey Ahead",6,2,3,10873310],              // Gold Spell N1
+      ["Asher & Lydia, Paths Beyond",6,3,5,10874110],   // Legendary Follower N1
+      ["Eudie, Your Dependable Mentor",6,3,2,10874120], // Legendary Follower N2
+      // ── NEUTRAL ──
+      ["Hamsa, Sculpted Divinity",7,0,2,10801110],    // Bronze Follower N1
+      ["Reina, Timeless Wanderer",7,0,5,10801120],    // Bronze Follower N2
+      ["Alfied, Squire of Joy",7,1,4,10802110],       // Silver Follower N1
+      ["Legacy of the Brave",7,1,3,10802310],         // Silver Spell N1
+      ["Aika, Elegy of Loss",7,2,2,10803110],         // Gold Follower N1
+      ["Wills United",7,2,2,10803310],                // Gold Spell N1
+      ["Alabaster Bahamut",7,3,9,10804110],           // Legendary Follower N1
+      ["Olivia, Proud Dark Angel",7,3,9,10804120],    // Legendary Follower N2
+    ]
+  },
 };
 
 const ROTATION_SETS = new Set(Object.keys(SETS).slice(-6));
