@@ -1075,6 +1075,10 @@ export default function PackSimulator() {
   const [allFlipped, setAllFlipped] = useState(false);
   const [multiCount, setMultiCount] = useState(10);
   const [multiResults, setMultiResults] = useState(null);
+  const [multiMode, setMultiMode] = useState("bulk");
+  const [multiIndex, setMultiIndex] = useState(0);
+  const [multiFlipped, setMultiFlipped] = useState([]);
+  const [multiAllFlipped, setMultiAllFlipped] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [pityCounter, setPityCounter] = useState(_initial.pityCounter);
   const [stats, setStats] = useState(_initial.stats);
@@ -1233,9 +1237,42 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
     setStats(newStats);
     setHistory(newHist.slice(0, 100));
     setMultiResults(allCards);
+    setMultiIndex(0);
+    setMultiFlipped(new Array(8).fill(false));
+    setMultiAllFlipped(false);
     setPackCards(null);
     setView("multi");
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
+
+  const handleMultiFlipCard = useCallback((idx) => {
+    if (multiFlipped[idx]) return;
+    if (multiResults && multiResults[multiIndex]) playFlipSound(multiResults[multiIndex][idx].rarityIdx);
+    setMultiFlipped(prev => {
+      const n = [...prev]; n[idx] = true;
+      if (n.every(Boolean)) setMultiAllFlipped(true);
+      return n;
+    });
+  }, [multiFlipped, multiResults, multiIndex, playFlipSound]);
+
+  const handleMultiFlipAll = useCallback(() => {
+    if (!multiResults || !multiResults[multiIndex]) return;
+    multiResults[multiIndex].forEach((c, i) => {
+      setTimeout(() => {
+        playFlipSound(c.rarityIdx);
+        setMultiFlipped(prev => {
+          const n = [...prev]; n[i] = true;
+          if (n.every(Boolean)) setMultiAllFlipped(true);
+          return n;
+        });
+      }, i * 100);
+    });
+  }, [multiResults, multiIndex, playFlipSound]);
+
+  const handleNextMultiPack = useCallback(() => {
+    setMultiIndex(prev => prev + 1);
+    setMultiFlipped(new Array(8).fill(false));
+    setMultiAllFlipped(false);
+  }, []);
 
   const resetAll = () => {
     if (!window.confirm("Reset all stats, history and pity counters for this profile? This cannot be undone.")) return;
@@ -1809,6 +1846,20 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
         {/* ── MULTI PACK VIEW ── */}
         {view === "multi" && (
           <div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+              {["bulk", "sequential"].map(mode => (
+                <button key={mode} onClick={() => setMultiMode(mode)}
+                  style={{
+                    padding: "4px 16px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                    border: multiMode === mode ? `1px solid ${currentSet.color}` : "1px solid #333",
+                    background: multiMode === mode ? `${currentSet.color}22` : "transparent",
+                    color: multiMode === mode ? currentSet.color : "#666",
+                    textTransform: "capitalize",
+                  }}>
+                  {mode}
+                </button>
+              ))}
+            </div>
             <div style={{
               display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 14,
               flexWrap: "wrap",
@@ -1826,7 +1877,39 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
                 Open {multiCount}×
               </button>
             </div>
-            {multiResults && (() => {
+            {multiMode === "sequential" && multiResults && multiIndex < multiResults.length && (
+              <div>
+                <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: currentSet.color, marginBottom: 10 }}>
+                  Pack {multiIndex + 1} / {multiResults.length}
+                </div>
+                <div style={{
+                  display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
+                  maxWidth: 600, margin: "0 auto 14px",
+                }}>
+                  {multiResults[multiIndex].map((card, i) => (
+                    <PackCard key={i} card={card} flipped={multiFlipped[i]} onClick={() => handleMultiFlipCard(i)} setColor={currentSet.color} />
+                  ))}
+                </div>
+                <div style={{ textAlign: "center", display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                  {!multiAllFlipped && (
+                    <button onClick={handleMultiFlipAll} style={{
+                      padding: "8px 24px", borderRadius: 8, border: "1px solid #444",
+                      background: "#1a1a2e", color: "#ccc", fontSize: 13, cursor: "pointer",
+                    }}>Flip All</button>
+                  )}
+                  <button onClick={handleNextMultiPack} disabled={!multiAllFlipped} style={{
+                    padding: "8px 28px", borderRadius: 8, border: "none",
+                    background: multiAllFlipped
+                      ? `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`
+                      : "#222",
+                    color: multiAllFlipped ? "#fff" : "#666", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                    boxShadow: multiAllFlipped ? `0 4px 20px ${currentSet.color}33` : "none",
+                    transition: "all 0.3s",
+                  }}>{multiIndex + 1 >= multiResults.length ? "See Summary" : "Next Pack"}</button>
+                </div>
+              </div>
+            )}
+            {multiResults && (multiMode === "bulk" || multiIndex >= multiResults.length) && (() => {
               const summary = { 0: 0, 1: 0, 2: 0, 3: 0, anim: 0 };
               const legendaries = [];
               const golds = [];
