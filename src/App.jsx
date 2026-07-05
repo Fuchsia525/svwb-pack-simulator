@@ -1075,10 +1075,11 @@ export default function PackSimulator() {
   const [allFlipped, setAllFlipped] = useState(false);
   const [multiCount, setMultiCount] = useState(10);
   const [multiResults, setMultiResults] = useState(null);
-  const [multiMode, setMultiMode] = useState("bulk");
+  const [multiMode, setMultiMode] = useState("sequential");
   const [multiIndex, setMultiIndex] = useState(0);
   const [multiFlipped, setMultiFlipped] = useState([]);
   const [multiAllFlipped, setMultiAllFlipped] = useState(false);
+  const [multiTransitioning, setMultiTransitioning] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [pityCounter, setPityCounter] = useState(_initial.pityCounter);
   const [stats, setStats] = useState(_initial.stats);
@@ -1162,6 +1163,12 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
     packCards.some(c => c.rarityIdx === 3) ? "legendary" :
     packCards.some(c => c.rarityIdx === 2) ? "gold" : null
 ) : null;
+  const currentMultiPack = multiResults && multiResults[multiIndex];
+  const multiPackHighlight = currentMultiPack ? (
+    currentMultiPack.some(c => c.isTicket) ? "ticket" :
+    currentMultiPack.some(c => c.rarityIdx === 3) ? "legendary" :
+    currentMultiPack.some(c => c.rarityIdx === 2) ? "gold" : null
+) : null;
   const handleOpenPack = useCallback(() => {
     playPackSound();
     const result = openPack(currentSet.cards, pityCounter[selectedSet], currentSet.ticketCards);
@@ -1240,6 +1247,7 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
     setMultiIndex(0);
     setMultiFlipped(new Array(8).fill(false));
     setMultiAllFlipped(false);
+    setMultiTransitioning(false);
     setPackCards(null);
     setView("multi");
   }, [multiCount, currentSet, pityCounter, stats, history, playPackSound]);
@@ -1269,9 +1277,13 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
   }, [multiResults, multiIndex, playFlipSound]);
 
   const handleNextMultiPack = useCallback(() => {
-    setMultiIndex(prev => prev + 1);
-    setMultiFlipped(new Array(8).fill(false));
-    setMultiAllFlipped(false);
+    setMultiTransitioning(true);
+    setTimeout(() => {
+      setMultiIndex(prev => prev + 1);
+      setMultiFlipped(new Array(8).fill(false));
+      setMultiAllFlipped(false);
+      setMultiTransitioning(false);
+    }, 50);
   }, []);
 
   const resetAll = () => {
@@ -1844,13 +1856,18 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
         )}
 
         {/* ── MULTI PACK VIEW ── */}
-        {view === "multi" && (
+        {view === "multi" && (() => {
+          const multiSequenceActive = multiMode === "sequential" && multiResults && multiIndex < multiResults.length;
+          return (
           <div>
             <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
               {["bulk", "sequential"].map(mode => (
-                <button key={mode} onClick={() => setMultiMode(mode)}
+                <button key={mode} onClick={() => !multiSequenceActive && setMultiMode(mode)}
+                  disabled={multiSequenceActive}
                   style={{
-                    padding: "4px 16px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer",
+                    padding: "4px 16px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                    cursor: multiSequenceActive ? "not-allowed" : "pointer",
+                    opacity: multiSequenceActive ? 0.4 : 1,
                     border: multiMode === mode ? `1px solid ${currentSet.color}` : "1px solid #333",
                     background: multiMode === mode ? `${currentSet.color}22` : "transparent",
                     color: multiMode === mode ? currentSet.color : "#666",
@@ -1863,21 +1880,24 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
             <div style={{
               display: "flex", justifyContent: "center", alignItems: "center", gap: 10, marginBottom: 14,
               flexWrap: "wrap",
+              opacity: multiSequenceActive ? 0.4 : 1,
             }}>
               <span style={{ fontSize: 12 }}>Packs:</span>
               <input type="range" min={1} max={100} value={multiCount}
                 onChange={e => setMultiCount(+e.target.value)}
-                style={{ width: 130, accentColor: currentSet.color }} />
+                disabled={multiSequenceActive}
+                style={{ width: 130, accentColor: currentSet.color, cursor: multiSequenceActive ? "not-allowed" : "pointer" }} />
               <span style={{ fontSize: 16, fontWeight: 700, color: currentSet.color, minWidth: 32, textAlign: "center" }}>{multiCount}</span>
-              <button onClick={handleMultiOpen} style={{
+              <button onClick={handleMultiOpen} disabled={multiSequenceActive} style={{
                 padding: "8px 22px", borderRadius: 8, border: "none",
                 background: `linear-gradient(135deg, ${currentSet.color}, ${currentSet.color}cc)`,
-                color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                color: "#fff", fontSize: 13, fontWeight: 700,
+                cursor: multiSequenceActive ? "not-allowed" : "pointer",
               }}>
                 Open {multiCount}×
               </button>
             </div>
-            {multiMode === "sequential" && multiResults && multiIndex < multiResults.length && (
+            {multiSequenceActive && !multiTransitioning && (
               <div>
                 <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: currentSet.color, marginBottom: 10 }}>
                   Pack {multiIndex + 1} / {multiResults.length}
@@ -1885,6 +1905,11 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
                 <div style={{
                   display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10,
                   maxWidth: 600, margin: "0 auto 14px",
+                  boxShadow: multiPackHighlight === "ticket" ? "0 0 40px #FFD70099, 0 0 80px #FFD70044"
+                          : multiPackHighlight === "legendary" ? "0 0 40px #FF450066, 0 0 80px #9C27B044"
+                          : multiPackHighlight === "gold" ? "0 0 30px #FFD70044"
+                          : "none",
+                  transition: "box-shadow 0.5s ease",
                 }}>
                   {multiResults[multiIndex].map((card, i) => (
                     <PackCard key={i} card={card} flipped={multiFlipped[i]} onClick={() => handleMultiFlipCard(i)} setColor={currentSet.color} />
@@ -1986,7 +2011,8 @@ const [showCraftFilters, setShowCraftFilters] = useState(false);
               );
             })()}
           </div>
-        )}
+          );
+        })()}
 
         {/* ── HISTORY VIEW ── */}
         {view === "history" && (
